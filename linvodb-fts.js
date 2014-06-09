@@ -9,7 +9,7 @@ function LinvoFTS()
 {
 	var self = this;
 	
-	var indexes = { };
+	var indexes = self.__indexes = { };
 	
 	/* External interfaces
 	 */
@@ -32,7 +32,7 @@ function getDocumentIndex(doc, idxConf)
 {
 	var idx = { };
 	// for each field in idxConf, run getFieldIndex and merge into idx
-	
+	return attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true }), doc.imdb_id); // TEMP test
 	return idx;
 };
 
