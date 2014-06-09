@@ -41,7 +41,7 @@ var tokenizer = new natural.WordTokenizer(),
 	metaphone = natural.Metaphone.process,
 	NGrams = natural.NGrams;
 
-function getFieldIndex(id, field, fieldConf)
+function getFieldIndex(field, fieldConf)
 {
 	/* 
 	 * TODO: shorthands: 
@@ -68,7 +68,7 @@ function getFieldIndex(id, field, fieldConf)
 	if (opts.stemmer) tokens =_.map(tokens, stemmer); // TODO: multi-lingual
 	if (opts.metaphone) tokens = _.map(tokens, function(t) { return metaphone(t) });
 
-	var jn = function(t) { return t.join(" ") }, score = getTokensScoring.bind(null, opts, id);	
+	var jn = function(t) { return t.join(" ") }, score = getTokensScoring.bind(null, opts);	
 	
 	var res = {};
 	res.idx = score(tokens);
@@ -84,10 +84,7 @@ function getFieldIndex(id, field, fieldConf)
 	return res;
 };
 
-console.log(getFieldIndex("pl", "polly likes balloons and loves her dog sally's eyes"));
-console.log(getFieldIndex("ps", "american psycho II: all american girl", { title: true, bigram: true, trigram: true }));
-
-function getTokensScoring(opts, id, tokens, origTokens)
+function getTokensScoring(opts, tokens, origTokens)
 {
 	return _.zipObject(tokens, tokens.map(function(token, i) {
 		// Calculate score
@@ -105,3 +102,31 @@ function query(indexes, query)
 
 
 module.exports = LinvoFTS;
+
+
+
+
+// Add id to the structure
+var mp = function(idx, id) {
+	_.each(idx, function(index) {
+		_.each(index, function(val, token) {
+			var tuple = {};
+			tuple[id] = val;
+			index[token] = tuple;
+		});
+	});
+	return idx;
+}
+var n = Date.now();
+var one = mp(getFieldIndex("polly likes balloons and loves her dog sally's eyes"), "sally");
+var two = mp(getFieldIndex("american psycho II: all american girl", { title: true, bigram: true, trigram: true }),"psycho2");
+var three = mp(getFieldIndex("american psycho", { title: true, bigram: true, trigram: true }),"psycho");
+var four = mp(getFieldIndex("american pie presents beta house", { title: true, bigram: true, trigram: true }),"piebeta");
+var five = mp(getFieldIndex("american pie", { title: true, bigram: true, trigram: true }),"pie");
+var six = mp(getFieldIndex("american pie 2", { title: true, bigram: true, trigram: true }),"pietwo");
+console.log(Date.now()-n);
+console.log(_.merge(one,two,three,four,five,six));
+
+/*
+ * Current res: 3 docs by title take 11ms to index, 12ms for 6 docs
+ */
