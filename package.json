@@ -10,9 +10,9 @@
     "url": "https://github.com/Ivshti/linvodb-fts.git"
   },
   "dependencies" : {
-    "underscore": ">=1.4.4",
+    "lodash": ">=2.4.1",
     "async": ">=0.2.9",
     "mpath": ">=0.2.1",
-    "natural": ">=0.1.27",
+    "natural": ">=0.1.27"
   }
 }
