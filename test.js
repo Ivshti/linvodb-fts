@@ -9,7 +9,7 @@ mongoose.set("cinematic-torrents-connection", process.env.LOCAL_TORRENTS_DB ? //
 var Metadata = mongoose.get("cinematic-torrents-connection").model("Metadata", new mongoose.Schema({ }, { collection: "metadata", strict: false }));
 
 var textSearch = new LinvoFTS();
-var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: true } }).sort({ seeders: -1 }).lean().limit(3000).stream();
+var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: true } }).sort({ seeders: -1 }).lean().stream();
 metaStream.on("data", function(meta) {
 	textSearch.index(meta);
 });
@@ -20,3 +20,5 @@ metaStream.on("close", function() {
 });
 
 // First test: 77MB for 1000 docs
+// 91 MB for 3000
+// 129 MB for ~16000 objects
