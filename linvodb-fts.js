@@ -26,6 +26,7 @@ function LinvoFTS()
 
 /*
  *  Default indexing rules: do n-grams only on titles, also pass title: true to ensure we don't apply stopwords to exact index
+ * Also, some system to crawl through a field which we have requested for indexing and retrieve all it's strings (and merge the results)
  */
 function getDocumentIndex(doc, idxConf)
 {
