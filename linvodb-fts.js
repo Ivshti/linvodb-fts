@@ -62,29 +62,33 @@ function getFieldIndex(field, fieldConf)
 	
 	if (opts.stemmer) tokens =_.map(tokens, stemmer); // TODO: multi-lingual
 	if (opts.metaphone) tokens = _.map(tokens, function(t) { return metaphone(t) });
-	
+
+	var jn = function(t) { return t.join(" ") }, score = getTokensScoring.bind(null, opts);	
 	var res = {};
-	res.idx = getTokensScoring(tokens);
-	res.idxExact = getTokensScoring(exactTokens);
-	
-	var jn = function(t) { return t.join(" ") };
+	res.idx = score(tokens);
+	res.idxExact = score(exactTokens);
 	if (opts.bigram) {
-		res.idxBigram = getTokensScoring(NGrams.bigrams(tokens).map(jn));
-		res.idxExactBigram = getTokensScoring(NGrams.bigrams(exactTokens).map(jn));
+		res.idxBigram = score(NGrams.bigrams(tokens).map(jn), tokens);
+		res.idxExactBigram = score(NGrams.bigrams(exactTokens).map(jn), exactTokens);
 	}
 	if (opts.trigram) {
-		res.idxTrigram = getTokensScoring(NGrams.trigrams(tokens).map(jn));
-		res.idxExactTrigram = getTokensScoring(NGrams.trigrams(exactTokens).map(jn));
+		res.idxTrigram = score(NGrams.trigrams(tokens).map(jn), tokens);
+		res.idxExactTrigram = score(NGrams.trigrams(exactTokens).map(jn), exactTokens);
 	}
 	return res;
 };
 console.log(getFieldIndex("polly likes balloons and loves her dog sally's eyes"));
-console.log(getFieldIndex("american psycho II: all american girl",{ title: true }));
+console.log(getFieldIndex("american psycho II: all american girl", { title: true }));
 
-function getTokensScoring(tokens, opts)
+function getTokensScoring(opts, tokens, origTokens)
 {
-	// TODO
-	return _.zipObject(tokens)
+	// TODO: vector space model - cos(token, all tokens) * opts.boost
+	return _.zipObject(tokens, tokens.map(function(token, i) {
+		// Calculate score
+		// For now, we assume all tokens are equally important; in the future, we'll have TD-IDF's
+		var tVec = token.split(" ");
+		return (_.intersection(tVec, origTokens || tokens).length / (tVec.length * tokens.length)) * opts.boost;
+	}));
 };
 
 function query(indexes, query)
