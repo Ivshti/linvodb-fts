@@ -1,0 +1,18 @@
+{
+  "name": "linvodb-fts",
+  "preferGlobal": true,
+  "version": "0.0.0",
+  "author": "Ivo Georgiev <ivo@linvo.com>",
+  "description": "LinvoDB - full text search extension",
+  "main": "./linvodb-fts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ivshti/linvodb-fts.git"
+  },
+  "dependencies" : {
+    "underscore": ">=1.4.4",
+    "async": ">=0.2.9",
+    "mpath": ">=0.2.1",
+    "natural": ">=0.1.27",
+  }
+}
