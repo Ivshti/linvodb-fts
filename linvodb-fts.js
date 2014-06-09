@@ -95,6 +95,18 @@ function getTokensScoring(opts, tokens, origTokens)
 	}));
 };
 
+function attachDocId(idx, id)
+{
+	_.each(idx, function(index) {
+		_.each(index, function(val, token) {
+			var tuple = {};
+			tuple[id] = val;
+			index[token] = tuple;
+		});
+	});
+	return idx;
+};
+
 
 function query(indexes, query)
 {
@@ -104,30 +116,6 @@ function query(indexes, query)
 
 module.exports = LinvoFTS;
 
-
-
-
-// Add id to the structure
-var mp = function(idx, id) {
-	_.each(idx, function(index) {
-		_.each(index, function(val, token) {
-			var tuple = {};
-			tuple[id] = val;
-			index[token] = tuple;
-		});
-	});
-	return idx;
-}
-var n = Date.now();
-var one = mp(getFieldIndex("polly likes balloons and loves her dog sally's eyes"), "sally");
-var two = mp(getFieldIndex("american psycho II: all american girl", { title: true, bigram: true, trigram: true }),"psycho2");
-var three = mp(getFieldIndex("american psycho", { title: true, bigram: true, trigram: true }),"psycho");
-var four = mp(getFieldIndex("american pie presents beta house", { title: true, bigram: true, trigram: true }),"piebeta");
-var five = mp(getFieldIndex("american pie", { title: true, bigram: true, trigram: true }),"pie");
-var six = mp(getFieldIndex("american pie 2", { title: true, bigram: true, trigram: true }),"pietwo");
-console.log(Date.now()-n);
-console.log(_.merge(one,two,three,four,five,six));
-
 /*
- * Current res: 3 docs by title take 11ms to index, 12ms for 6 docs
+ * Current res: 3 docs by title take 11ms to index, 12ms for 6 docs (15ms on iMac)
  */
