@@ -61,7 +61,7 @@ function getFieldIndex(field, fieldConf)
 	/*
 	 * NOTE: it would be great if we somehow apply this pipeline dynamically
 	 */
-	var tokens = tokenizer.tokenize(field), exactTokens;
+	var tokens = tokenizer.tokenize(field.toLowerCase()), exactTokens;
 	if (opts.title) exactTokens = [].concat(tokens);
 	if (opts.stopwords) tokens = _.filter(tokens, function(t) { return !stopwords.hasOwnProperty(t) });
 	if (!opts.title) exactTokens = [].concat(tokens);
