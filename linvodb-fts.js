@@ -24,9 +24,15 @@ function LinvoFTS()
 	return this;
 };
 
+/*
+ *  Default indexing rules: do n-grams only on titles, also pass title: true to ensure we don't apply stopwords to exact index
+ */
 function getDocumentIndex(doc, idxConf)
 {
+	var idx = { };
+	// for each field in idxConf, run getFieldIndex and merge into idx
 	
+	return idx;
 };
 
 var tokenizer = new natural.WordTokenizer(),
@@ -35,7 +41,7 @@ var tokenizer = new natural.WordTokenizer(),
 	metaphone = natural.Metaphone.process,
 	NGrams = natural.NGrams;
 
-function getFieldIndex(field, fieldConf)
+function getFieldIndex(id, field, fieldConf)
 {
 	/* 
 	 * TODO: shorthands: 
@@ -46,15 +52,14 @@ function getFieldIndex(field, fieldConf)
 		stopwords: true, // false for titles, at least for the exact index
 		stemmer: true,
 		metaphone: true,
-		bigram: true,
-		trigram: true,
+		bigram: false,
+		trigram: false,
 		boost: 1
 	}, fieldConf || { });
 		
 	/*
 	 * NOTE: it would be great if we somehow apply this pipeline dynamically
 	 */
-	
 	var tokens = tokenizer.tokenize(field), exactTokens;
 	if (opts.title) exactTokens = [].concat(tokens);
 	if (opts.stopwords) tokens = _.filter(tokens, function(t) { return !stopwords.hasOwnProperty(t) });
@@ -63,7 +68,8 @@ function getFieldIndex(field, fieldConf)
 	if (opts.stemmer) tokens =_.map(tokens, stemmer); // TODO: multi-lingual
 	if (opts.metaphone) tokens = _.map(tokens, function(t) { return metaphone(t) });
 
-	var jn = function(t) { return t.join(" ") }, score = getTokensScoring.bind(null, opts);	
+	var jn = function(t) { return t.join(" ") }, score = getTokensScoring.bind(null, opts, id);	
+	
 	var res = {};
 	res.idx = score(tokens);
 	res.idxExact = score(exactTokens);
@@ -77,12 +83,12 @@ function getFieldIndex(field, fieldConf)
 	}
 	return res;
 };
-console.log(getFieldIndex("polly likes balloons and loves her dog sally's eyes"));
-console.log(getFieldIndex("american psycho II: all american girl", { title: true }));
 
-function getTokensScoring(opts, tokens, origTokens)
+console.log(getFieldIndex("pl", "polly likes balloons and loves her dog sally's eyes"));
+console.log(getFieldIndex("ps", "american psycho II: all american girl", { title: true, bigram: true, trigram: true }));
+
+function getTokensScoring(opts, id, tokens, origTokens)
 {
-	// TODO: vector space model - cos(token, all tokens) * opts.boost
 	return _.zipObject(tokens, tokens.map(function(token, i) {
 		// Calculate score
 		// For now, we assume all tokens are equally important; in the future, we'll have TD-IDF's
@@ -90,6 +96,7 @@ function getTokensScoring(opts, tokens, origTokens)
 		return (_.intersection(tVec, origTokens || tokens).length / (tVec.length * tokens.length)) * opts.boost;
 	}));
 };
+
 
 function query(indexes, query)
 {
