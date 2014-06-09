@@ -46,7 +46,8 @@ function getFieldIndex(field, fieldConf)
 		stopwords: true, // false for titles, at least for the exact index
 		stemmer: true,
 		metaphone: true,
-		ngrams: true,
+		bigram: true,
+		trigram: true,
 		boost: 1
 	}, fieldConf || { });
 		
@@ -65,16 +66,20 @@ function getFieldIndex(field, fieldConf)
 	var res = {};
 	res.idx = getTokensScoring(tokens);
 	res.idxExact = getTokensScoring(exactTokens);
-	if (opts.ngrams) {
-		var jn = function(t) { return t.join(" ") };
+	
+	var jn = function(t) { return t.join(" ") };
+	if (opts.bigram) {
 		res.idxBigram = getTokensScoring(NGrams.bigrams(tokens).map(jn));
-		res.idxTrigram = getTokensScoring(NGrams.trigrams(tokens).map(jn));
 		res.idxExactBigram = getTokensScoring(NGrams.bigrams(exactTokens).map(jn));
+	}
+	if (opts.trigram) {
+		res.idxTrigram = getTokensScoring(NGrams.trigrams(tokens).map(jn));
 		res.idxExactTrigram = getTokensScoring(NGrams.trigrams(exactTokens).map(jn));
-	};
+	}
 	return res;
 };
 console.log(getFieldIndex("polly likes balloons and loves her dog sally's eyes"));
+console.log(getFieldIndex("american psycho II: all american girl",{ title: true }));
 
 function getTokensScoring(tokens, opts)
 {
