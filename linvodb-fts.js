@@ -149,10 +149,11 @@ function applyQuery(indexes, idxQuery)
 		_.each(indexedScores, function(score, id) {
 			if (! resMap[id]) resMap[id] = 0;
 			//resMap[id] += score * (searchTokenScore+1)*(searchTokenScore+1);
-			resMap[id] += (score * searchTokenScore * indexBoost); // Think of the model here?
+			resMap[id] += (score /* * searchTokenScore*/ * indexBoost); // Think of the model here?
 		});
 	});
 	
+	// TODO: score threshold: how about 3?
 	return _.chain(resMap).pairs()
 		.map(function(p) { return{ id: p[0], score: p[1] } })
 		.sortBy("score")
