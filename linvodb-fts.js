@@ -128,7 +128,7 @@ function mergeIndexes(indexes)
 
 function applyQueryString(indexes, queryStr)
 {
-	return applyQuery(indexes, getFieldIndex(queryStr, { bigram: true, trigram: true })); // The indexes we will walk for that query
+	return applyQuery(indexes, getFieldIndex(queryStr, { bigram: true, trigram: true, title: true })); // The indexes we will walk for that query
 };
 
 function applyQuery(indexes, idxQuery)
@@ -140,11 +140,16 @@ function applyQuery(indexes, idxQuery)
 		if (!this.isLeaf || isNaN(searchTokenScore)) return; // We're interested only in leaf nodes (token scores)
 
 		// TODO: partial queries
+
+		var indexBoost = 1;
+		if (this.path[0].match("Bigram")) indexBoost = 2;
+		if (this.path[0].match("Trigram")) indexBoost = 3;
+		
 		var indexedScores = idxTrav.get(this.path) || { };
 		_.each(indexedScores, function(score, id) {
 			if (! resMap[id]) resMap[id] = 0;
 			//resMap[id] += score * (searchTokenScore+1)*(searchTokenScore+1);
-			resMap[id] += score * searchTokenScore; // Think of the model here?
+			resMap[id] += (score * searchTokenScore * indexBoost); // Think of the model here?
 		});
 	});
 	
