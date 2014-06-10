@@ -10,12 +10,18 @@ var Metadata = mongoose.get("cinematic-torrents-connection").model("Metadata", n
 
 var textSearch = new LinvoFTS();
 var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: true } })
-	.sort({ seeders: -1 }).limit(500).lean().stream();
+	.sort({ seeders: -1 })/*.limit(500)*/.lean().stream();
+
+var indexTime = 0, docsCount = 0;
 metaStream.on("data", function(meta) {
+	var start = Date.now(); // LOGGING
 	textSearch.index(meta);
+	indexTime += (Date.now()-start); docsCount++; // LOGGING
 });
 metaStream.on("close", function() { 
 	//console.log(textSearch.__indexes);
+	console.log("Indexing time: "+indexTime+"ms, docs: "+docsCount);
+	
 	console.log("idx",Object.keys(textSearch.__indexes.idx).length);	
 	console.log("idxBigram",Object.keys(textSearch.__indexes.idxBigram).length);	
 	console.log("idxTrigram",Object.keys(textSearch.__indexes.idxTrigram).length);	
@@ -27,11 +33,13 @@ metaStream.on("close", function() {
 	
 	var queryCb = function() { 
 		var start = Date.now();
-		return function(err, res) { console.log(Date.now()-start, res) };
+		return function(err, res) { console.log(Date.now()-start, res.slice(0, 10)) };
 	};
 	textSearch.query("wolf street", queryCb()); // 50 objects -> 1ms, 500 objects -> 1ms
 	textSearch.query("wolf of wall", queryCb());
 	textSearch.query("wall street", queryCb());
+	textSearch.query("psycho", queryCb());
+	textSearch.query("american psycho", queryCb());
 	//textSearch.query("game th", queryCb);
 	//textSearch.query("america", queryCb);
 	
