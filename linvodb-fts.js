@@ -130,11 +130,11 @@ function mergeIndexes(indexes)
 function getQueryRes(indexes, query)
 {
 	var idxTrav = traverse(indexes);
-	var idxQuery = getFieldIndex(query); // The indexes we will walk for that query
+	var idxQuery = getFieldIndex(query, { bigram: true, trigram: true }); // The indexes we will walk for that query
 	var resMap = {}; // The results map (ID -> score)
-	
+	console.log(idxQuery);
 	traverse(idxQuery).forEach(function(searchTokenScore) {
-		if (! this.isLeaf) return; // We're interested only in leaf nodes (token scores)
+		if (!this.isLeaf || isNaN(searchTokenScore)) return; // We're interested only in leaf nodes (token scores)
 
 		// TODO: partial queries
 		var indexedScores = idxTrav.get(this.path) || { };
