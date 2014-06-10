@@ -27,6 +27,7 @@ metaStream.on("close", function() {
 	console.log("idxBigram",Object.keys(textSearch.__indexes.idxBigram).length);	
 	console.log("idxTrigram",Object.keys(textSearch.__indexes.idxTrigram).length);	
 
+	console.log("idxExact", Object.keys(textSearch.__indexes.idxExact).length);	
 	console.log("idxExactBigram", Object.keys(textSearch.__indexes.idxExactBigram).length);	
 	console.log("idxExactTrigram", Object.keys(textSearch.__indexes.idxExactTrigram).length);	
 
