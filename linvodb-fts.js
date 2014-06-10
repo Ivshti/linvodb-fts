@@ -17,7 +17,7 @@ function LinvoFTS()
 		_.merge(indexes, getDocumentIndex(doc, idxCfg));
 	};
 	self.query = function(query, callback) { 
-		
+		return callback(null, query(indexes, query));
 	};
 	
 	
@@ -34,8 +34,8 @@ function getDocumentIndex(doc, idxConf)
 	// for each field in idxConf, run getFieldIndex and merge into idx
 
 	// TEMP test
-	// TODO: when we merge those docs, we have to do an arithmetic + on rankings
-	return _.merge.apply(null, [
+	return mergeIndexes([
+		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 1.5 }), doc.imdb_id),
 		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 1.5 }), doc.imdb_id),
 		attachDocId(getFieldIndex(doc.description||"", { }), doc.imdb_id),  // boost?
 	]
@@ -117,11 +117,20 @@ function attachDocId(idx, id)
 	return idx;
 };
 
+function mergeIndexes(indexes)
+{
+	// like _.merge, but sum integers
+	return _.merge.apply(null, indexes.concat(function(a, b) {
+		return (typeof(a) == "number" && typeof(b) == "number") ? a+b : undefined
+	}));
+};
+
 
 function query(indexes, query)
 {
 	
 };
+
 
 
 module.exports = LinvoFTS;
