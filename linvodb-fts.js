@@ -83,15 +83,15 @@ function getFieldIndex(field, fieldConf)
 	var jn = function(t) { return t.join(" ") };	
 	
 	var res = {};
-	res.idx = getTokensScoring(opts.boost*1, tokens);
-	res.idxExact = getTokensScoring(opts.boost*1.5, exactTokens);
+	res.idx = getTokensScoring(opts.boost/*1*/, tokens);
+	res.idxExact = getTokensScoring(opts.boost/*1.5*/, exactTokens);
 	if (opts.bigram) {
-		res.idxBigram = getTokensScoring(opts.boost*2, NGrams.bigrams(tokens).map(jn), tokens);
-		res.idxExactBigram = getTokensScoring(opts.boost*2.5, NGrams.bigrams(exactTokens).map(jn), exactTokens);
+		res.idxBigram = getTokensScoring(opts.boost/**2*/, NGrams.bigrams(tokens).map(jn), tokens);
+		res.idxExactBigram = getTokensScoring(opts.boost/**2.5*/, NGrams.bigrams(exactTokens).map(jn), exactTokens);
 	}
 	if (opts.trigram) {
-		res.idxTrigram = getTokensScoring(opts.boost*3, NGrams.trigrams(tokens).map(jn), tokens);
-		res.idxExactTrigram = getTokensScoring(opts.boost*3.5, NGrams.trigrams(exactTokens).map(jn), exactTokens);
+		res.idxTrigram = getTokensScoring(opts.boost/**3*/, NGrams.trigrams(tokens).map(jn), tokens);
+		res.idxExactTrigram = getTokensScoring(opts.boost/**3.5*/, NGrams.trigrams(exactTokens).map(jn), exactTokens);
 	}
 	return res;
 };
