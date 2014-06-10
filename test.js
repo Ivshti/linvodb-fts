@@ -44,7 +44,9 @@ metaStream.on("close", function() {
 			 
 		};
 	};
-	textSearch.query("wolf street", queryCb("wolf street")); // 50 objects -> 1ms, 500 objects -> 1ms
+	textSearch.query("wall street", queryCb("wall street")); // 50 objects -> 1ms, 500 objects -> 1ms
+	textSearch.query("wolf of", queryCb("wolf of"));
+	textSearch.query("wolf street", queryCb("wolf street"));
 	textSearch.query("wolf of wall", queryCb("wolf of wall"));
 	//textSearch.query("psycho", queryCb());
 	
@@ -53,7 +55,7 @@ metaStream.on("close", function() {
 	 * but because of the vector space model it's insignificant in score; exact matches should be encouraged */
 	
 	textSearch.query("christian bale", queryCb("christian bale"));
-	textSearch.query("jordan belford", queryCb("jordan belford"));
+	textSearch.query("jordan belfort", queryCb("jordan belfort"));
 	//textSearch.query("game th", queryCb);
 	//textSearch.query("america", queryCb);
 	
