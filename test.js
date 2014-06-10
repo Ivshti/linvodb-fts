@@ -26,7 +26,7 @@ metaStream.on("close", function() {
 	console.log("Finished indexing documents");;	
 	
 	var queryCb = function(err, res) { console.log(res) }
-	textSearch.query("wolf", queryCb); // 50 objects -> 1ms, 500 objects -> 1ms
+	console.log(textSearch.query("wolf street", queryCb)); // 50 objects -> 1ms, 500 objects -> 1ms
 	//textSearch.query("game th", queryCb);
 	//textSearch.query("america", queryCb);
 	

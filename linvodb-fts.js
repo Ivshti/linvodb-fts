@@ -4,6 +4,7 @@ var traverse = require("traverse");
 
 /*
  * TODO: do this in a separate thread?
+ * TODO: more class-oriented structure, e.g. indexes to have .getDocuments(indexName, token) or something
  */
 
 function LinvoFTS()
@@ -132,12 +133,22 @@ function getQueryRes(indexes, query)
 	var idxQuery = getFieldIndex(query); // The indexes we will walk for that query
 	var resMap = {}; // The results map (ID -> score)
 	
-	// TODO: partial queries
-	traverse(idxQuery).forEach(function(val) {
-		if (this.isLeaf) mergeIndexes([resMap, (idxTrav.get(this.path) || {})]);
+	traverse(idxQuery).forEach(function(searchTokenScore) {
+		if (! this.isLeaf) return; // We're interested only in leaf nodes (token scores)
+
+		// TODO: partial queries
+		var indexedScores = idxTrav.get(this.path) || { };
+		_.each(indexedScores, function(score, id) {
+			if (! resMap[id]) resMap[id] = 0;
+			resMap[id] += score * searchTokenScore;
+		});
 	});
 	
-	console.log(resMap);
+	return _.chain(resMap).pairs()
+		.map(function(p) { return{ id: p[0], score: p[1] } })
+		.sortBy("score")
+		.reverse()
+		.value();
 };
 
 
