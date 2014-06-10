@@ -1,5 +1,6 @@
 var natural = require("natural");
 var _ = require("lodash");
+var traverse = require("traverse");
 
 /*
  * TODO: do this in a separate thread?
@@ -17,7 +18,7 @@ function LinvoFTS()
 		_.merge(indexes, getDocumentIndex(doc, idxCfg));
 	};
 	self.query = function(query, callback) { 
-		return callback(null, query(indexes, query));
+		return callback(null, getQueryRes(indexes, query));
 	};
 	
 	
@@ -35,7 +36,6 @@ function getDocumentIndex(doc, idxConf)
 
 	// TEMP test
 	return mergeIndexes([
-		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 1.5 }), doc.imdb_id),
 		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 1.5 }), doc.imdb_id),
 		attachDocId(getFieldIndex(doc.description||"", { }), doc.imdb_id),  // boost?
 	]
@@ -126,9 +126,18 @@ function mergeIndexes(indexes)
 };
 
 
-function query(indexes, query)
+function getQueryRes(indexes, query)
 {
+	var idxTrav = traverse(indexes);
+	var idxQuery = getFieldIndex(query); // The indexes we will walk for that query
+	var resMap = {}; // The results map (ID -> score)
 	
+	// TODO: partial queries
+	traverse(idxQuery).forEach(function(val) {
+		if (this.isLeaf) mergeIndexes([resMap, (idxTrav.get(this.path) || {})]);
+	});
+	
+	console.log(resMap);
 };
 
 

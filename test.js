@@ -10,12 +10,12 @@ var Metadata = mongoose.get("cinematic-torrents-connection").model("Metadata", n
 
 var textSearch = new LinvoFTS();
 var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: true } })
-	.sort({ seeders: -1 }).limit(1000).lean().stream();
+	.sort({ seeders: -1 }).limit(500).lean().stream();
 metaStream.on("data", function(meta) {
 	textSearch.index(meta);
 });
 metaStream.on("close", function() { 
-	console.log(textSearch.__indexes);
+	//console.log(textSearch.__indexes);
 	console.log("idx",Object.keys(textSearch.__indexes.idx).length);	
 	console.log("idxBigram",Object.keys(textSearch.__indexes.idxBigram).length);	
 	console.log("idxTrigram",Object.keys(textSearch.__indexes.idxTrigram).length);	
@@ -23,14 +23,13 @@ metaStream.on("close", function() {
 	console.log("idxExactBigram", Object.keys(textSearch.__indexes.idxExactBigram).length);	
 	console.log("idxExactTrigram", Object.keys(textSearch.__indexes.idxExactTrigram).length);	
 
-	console.log("Finished indexing documents");;
+	console.log("Finished indexing documents");;	
 	
-	/*
 	var queryCb = function(err, res) { console.log(res) }
-	textSearch.query("wolf",queryCb);
-	textSearch.query("game th", queryCb);
-	textSearch.query("america", queryCb);
-	*/
+	textSearch.query("wolf", queryCb); // 50 objects -> 1ms, 500 objects -> 1ms
+	//textSearch.query("game th", queryCb);
+	//textSearch.query("america", queryCb);
+	
 	
 	//process.nextTick(function() { process.exit() });
 });
