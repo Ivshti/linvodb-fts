@@ -39,7 +39,7 @@ metaStream.on("close", function() {
 			Metadata.find({ imdb_id: { $in: _.pluck(res.slice(0, 20), "id") } }).lean().exec(function(err, meta) {
 				var meta = _.indexBy(meta, "imdb_id");
 				var results =  res.slice(0, 20).map(function(x) { meta[x.id].score=x.score; return meta[x.id] });
-				console.log(name, time, _.map(results, function(x) { return _.pick(x, "name", "score") });
+				console.log(name, time, _.map(results, function(x) { return _.pick(x, "name", "score") }));
 			});
 			 
 		};
