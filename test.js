@@ -1,4 +1,5 @@
 var mongoose = require("mongoose");
+var _ = require("lodash");
 var LinvoFTS = require("./linvodb-fts");
 
 mongoose.set("cinematic-torrents-connection", process.env.LOCAL_TORRENTS_DB ? // WARNING; taken from torrentCrawler
@@ -29,17 +30,30 @@ metaStream.on("close", function() {
 	console.log("idxExactBigram", Object.keys(textSearch.__indexes.idxExactBigram).length);	
 	console.log("idxExactTrigram", Object.keys(textSearch.__indexes.idxExactTrigram).length);	
 
-	console.log("Finished indexing documents");;	
+	console.log("Finished indexing documents");
 	
-	var queryCb = function() { 
+	var queryCb = function(name) { 
 		var start = Date.now();
-		return function(err, res) { console.log(Date.now()-start, res.slice(0, 10)) };
+		return function(err, res) { 
+			var time = Date.now()-start;
+			Metadata.find({ imdb_id: { $in: _.pluck(res.slice(0, 20), "id") } }).lean().exec(function(err, meta) {
+				var meta = _.indexBy(meta, "imdb_id");
+				var results =  res.map(function(x) { return meta[x.id] || {} });
+				console.log(name, time, _.pluck(results, "name"));
+			});
+			 
+		};
 	};
-	textSearch.query("wolf street", queryCb()); // 50 objects -> 1ms, 500 objects -> 1ms
-	textSearch.query("wolf of wall", queryCb());
-	textSearch.query("wall street", queryCb());
-	textSearch.query("psycho", queryCb());
-	textSearch.query("american psycho", queryCb());
+	textSearch.query("wolf street", queryCb("wolf street")); // 50 objects -> 1ms, 500 objects -> 1ms
+	textSearch.query("wolf of wall", queryCb("wolf of wall"));
+	//textSearch.query("psycho", queryCb());
+	
+	textSearch.query("american psycho", queryCb("american psycho")); 
+	/* This query returns ianappropriate results - we have an exact match on "american psycho" bigrams with american psycho II,
+	 * but because of the vector space model it's insignificant in score; exact matches should be encouraged */
+	
+	textSearch.query("christian bale", queryCb("christian bale"));
+	textSearch.query("jordan belford", queryCb("jordan belford"));
 	//textSearch.query("game th", queryCb);
 	//textSearch.query("america", queryCb);
 	
