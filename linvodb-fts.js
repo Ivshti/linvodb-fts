@@ -19,7 +19,7 @@ function LinvoFTS()
 		_.merge(indexes, getDocumentIndex(doc, idxCfg));
 	};
 	self.query = function(query, callback) { 
-		return callback(null, getQueryRes(indexes, query));
+		return callback(null, applyQueryString(indexes, query));
 	};
 	
 	
@@ -126,13 +126,16 @@ function mergeIndexes(indexes)
 	}));
 };
 
+function applyQueryString(indexes, queryStr)
+{
+	return applyQuery(indexes, getFieldIndex(queryStr, { bigram: true, trigram: true })); // The indexes we will walk for that query
+};
 
-function getQueryRes(indexes, query)
+function applyQuery(indexes, idxQuery)
 {
 	var idxTrav = traverse(indexes);
-	var idxQuery = getFieldIndex(query, { bigram: true, trigram: true }); // The indexes we will walk for that query
 	var resMap = {}; // The results map (ID -> score)
-	console.log(idxQuery);
+
 	traverse(idxQuery).forEach(function(searchTokenScore) {
 		if (!this.isLeaf || isNaN(searchTokenScore)) return; // We're interested only in leaf nodes (token scores)
 

@@ -25,8 +25,13 @@ metaStream.on("close", function() {
 
 	console.log("Finished indexing documents");;	
 	
-	var queryCb = function(err, res) { console.log(res) }
-	console.log(textSearch.query("wolf street", queryCb)); // 50 objects -> 1ms, 500 objects -> 1ms
+	var queryCb = function() { 
+		var start = Date.now();
+		return function(err, res) { console.log(Date.now()-start, res) };
+	};
+	textSearch.query("wolf street", queryCb()); // 50 objects -> 1ms, 500 objects -> 1ms
+	textSearch.query("wolf of wall", queryCb());
+	textSearch.query("wall street", queryCb());
 	//textSearch.query("game th", queryCb);
 	//textSearch.query("america", queryCb);
 	
