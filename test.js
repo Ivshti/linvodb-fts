@@ -9,7 +9,8 @@ mongoose.set("cinematic-torrents-connection", process.env.LOCAL_TORRENTS_DB ? //
 var Metadata = mongoose.get("cinematic-torrents-connection").model("Metadata", new mongoose.Schema({ }, { collection: "metadata", strict: false }));
 
 var textSearch = new LinvoFTS();
-var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: true } }).sort({ seeders: -1 }).lean().stream();
+var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: true } })
+	.sort({ seeders: -1 })/*.limit(1)*/.lean().stream();
 metaStream.on("data", function(meta) {
 	textSearch.index(meta);
 });
