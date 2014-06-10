@@ -16,6 +16,13 @@ metaStream.on("data", function(meta) {
 });
 metaStream.on("close", function() { 
 	//console.log(textSearch.__indexes);
+	console.log("idx",Object.keys(textSearch.__indexes.idx).length);	
+	console.log("idxBigram",Object.keys(textSearch.__indexes.idxBigram).length);	
+	console.log("idxTrigram",Object.keys(textSearch.__indexes.idxTrigram).length);	
+
+	console.log("idxExactBigram", Object.keys(textSearch.__indexes.idxExactBigram).length);	
+	console.log("idxExactTrigram", Object.keys(textSearch.__indexes.idxExactTrigram).length);	
+
 	console.log("Finished indexing documents");
 	//process.nextTick(function() { process.exit() });
 });
