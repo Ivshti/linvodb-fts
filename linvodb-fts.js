@@ -32,7 +32,17 @@ function getDocumentIndex(doc, idxConf)
 {
 	var idx = { };
 	// for each field in idxConf, run getFieldIndex and merge into idx
-	return attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true }), doc.imdb_id); // TEMP test
+
+	// TEMP test
+	// TODO: when we merge those docs, we have to do an arithmetic + on rankings
+	return _.merge.apply(null, [
+		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 1.5 }), doc.imdb_id),
+		attachDocId(getFieldIndex(doc.description||"", { }), doc.imdb_id),  // boost?
+	]
+	.concat((doc.director||[]).map(function(d) { return attachDocId(getFieldIndex(d, { title: true, bigram: true, trigram: true }), doc.imdb_id) }))
+	.concat((doc.cast||[]).map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true }), doc.imdb_id) }))
+	);
+
 	return idx;
 };
 
