@@ -1,6 +1,7 @@
 var natural = require("natural");
 var _ = require("lodash");
 var traverse = require("traverse");
+var Autocomplete = require("autocomplete");
 
 /*
  * TODO: do this in a separate thread?
@@ -12,14 +13,17 @@ function LinvoFTS()
 	var self = this;
 	
 	var indexes = self.__indexes = { };
-	
+	var completer = self.__completer = Autocomplete.connectAutocomplete();
+
 	/* External interfaces
 	 */
 	self.index = function(doc, idxCfg) {
-		_.merge(indexes, getDocumentIndex(doc, idxCfg));
+		var docIdx = getDocumentIndex(doc, idxCfg);
+		_.merge(indexes, docIdx);
+		Object.keys(docIdx.idxExact).forEach(function(token) { completer.addElement(token) });
 	};
 	self.query = function(query, callback) { 
-		return callback(null, applyQueryString(indexes, query));
+		return callback(null, applyQueryString(indexes, completer, query));
 	};
 	
 	
@@ -131,8 +135,10 @@ function mergeIndexes(indexes)
 	}));
 };
 
-function applyQueryString(indexes, queryStr)
+function applyQueryString(indexes, completer, queryStr)
 {
+	var partialStr = tokenizer.tokenize(queryStr.toLowerCase()).pop();
+	console.log(completer.search(partialStr));
 	return applyQuery(indexes, getFieldIndex(queryStr, { bigram: true, trigram: true, title: true })); // The indexes we will walk for that query
 };
 
