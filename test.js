@@ -57,12 +57,14 @@ metaStream.on("close", function() {
 	 * but because of the vector space model it's insignificant in score; exact matches should be encouraged */
 	
 	textSearch.query("christian bale", queryCb("christian bale"));
-	textSearch.query("jordan belfort", queryCb("jordan belfort"));
-	textSearch.query("following", queryCb("following"));
-	textSearch.query("big bang", queryCb("big bang"));
+	
 
-	//textSearch.query("game th", queryCb);
-	//textSearch.query("america", queryCb);
+	//textSearch.query("jordan belfort", queryCb("jordan belfort"));
+	//textSearch.query("following", queryCb("following"));
+	//textSearch.query("big bang", queryCb("big bang"));
+
+	textSearch.query("game thr", queryCb);
+	textSearch.query("american ps", queryCb);
 	
 	
 	//process.nextTick(function() { process.exit() });
