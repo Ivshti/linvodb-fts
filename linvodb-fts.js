@@ -80,29 +80,29 @@ function getFieldIndex(field, fieldConf)
 	if (opts.stemmer) tokens =_.map(tokens, stemmer); // TODO: multi-lingual
 	if (opts.metaphone) tokens = _.map(tokens, function(t) { return metaphone(t) });
 
-	var jn = function(t) { return t.join(" ") };	
+	var jn = function(t) { return t.join(" ") }, score = getTokensScoring.bind(null, opts);
 	
 	var res = {};
-	res.idx = getTokensScoring(opts.boost/*1*/, tokens);
-	res.idxExact = getTokensScoring(opts.boost/*1.5*/, exactTokens);
+	res.idx = score(tokens);
+	res.idxExact = score(exactTokens);
 	if (opts.bigram) {
-		res.idxBigram = getTokensScoring(opts.boost/**2*/, NGrams.bigrams(tokens).map(jn), tokens);
-		res.idxExactBigram = getTokensScoring(opts.boost/**2.5*/, NGrams.bigrams(exactTokens).map(jn), exactTokens);
+		res.idxBigram = score(NGrams.bigrams(tokens).map(jn), tokens);
+		res.idxExactBigram = score(NGrams.bigrams(exactTokens).map(jn), exactTokens);
 	}
 	if (opts.trigram) {
-		res.idxTrigram = getTokensScoring(opts.boost/**3*/, NGrams.trigrams(tokens).map(jn), tokens);
-		res.idxExactTrigram = getTokensScoring(opts.boost/**3.5*/, NGrams.trigrams(exactTokens).map(jn), exactTokens);
+		res.idxTrigram = score(NGrams.trigrams(tokens).map(jn), tokens);
+		res.idxExactTrigram = score(NGrams.trigrams(exactTokens).map(jn), exactTokens);
 	}
 	return res;
 };
 
-function getTokensScoring(boost, tokens, origTokens)
+function getTokensScoring(opts, tokens, origTokens)
 {
 	return _.zipObject(tokens, tokens.map(function(token, i) {
 		// Calculate score
 		// For now, we assume all tokens are equally important; in the future, we'll have TD-IDF's
 		var tVec = token.split(" ");
-		return (_.intersection(tVec, origTokens || tokens).length / (tVec.length * tokens.length)) * boost;
+		return (_.intersection(tVec, origTokens || tokens).length / (tVec.length * tokens.length)) * opts.boost;
 	}));
 };
 
