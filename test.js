@@ -27,6 +27,7 @@ metaStream.on("close", function() {
 	console.log("idxBigram",Object.keys(textSearch.__indexes.idxBigram).length);	
 	console.log("idxTrigram",Object.keys(textSearch.__indexes.idxTrigram).length);	
 
+	console.log("idxExact", Object.keys(textSearch.__indexes.idxExact).length);	
 	console.log("idxExactBigram", Object.keys(textSearch.__indexes.idxExactBigram).length);	
 	console.log("idxExactTrigram", Object.keys(textSearch.__indexes.idxExactTrigram).length);	
 
@@ -66,3 +67,5 @@ metaStream.on("close", function() {
 // First test: 77MB for 1000 docs
 // 91 MB for 3000
 // 129 MB for ~16000 objects
+// ~ 400MB for 20 000 docs, title+desc+cast
+// 730MB for 20 000 docs with bigrams for desc 
