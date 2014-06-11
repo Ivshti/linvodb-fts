@@ -39,7 +39,7 @@ function getDocumentIndex(doc, idxConf)
 	var cast = doc.cast || [], director = doc.director || [], writer = doc.writer || [], keywords = doc.keywords || [];
 	// TODO: index writer, keywords
 	return mergeIndexes([
-		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 2 }), doc.imdb_id),
+		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 2.5 }), doc.imdb_id),
 		attachDocId(getFieldIndex(doc.description||"", { boost: 1.5/*, bigram: true*/ }), doc.imdb_id),  // boost?
 	]
 	.concat(director.map(function(d) { return attachDocId(getFieldIndex(d, { title: true, bigram: true, trigram: true, fraction: director.length }), doc.imdb_id) }))
