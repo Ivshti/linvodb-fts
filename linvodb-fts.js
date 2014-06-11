@@ -36,12 +36,16 @@ function getDocumentIndex(doc, idxConf)
 	// for each field in idxConf, run getFieldIndex and merge into idx
 
 	// TEMP test
+	var cast = doc.cast || [], director = doc.director || [], writer = doc.writer || [], keywords = doc.keywords || [];
+	// TODO: index writer, keywords
 	return mergeIndexes([
-		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 1.5 }), doc.imdb_id),
-		attachDocId(getFieldIndex(doc.description||"", { }), doc.imdb_id),  // boost?
+		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 2 }), doc.imdb_id),
+		attachDocId(getFieldIndex(doc.description||"", { boost: 1.5/*, bigram: true*/ }), doc.imdb_id),  // boost?
 	]
-	.concat((doc.director||[]).map(function(d) { return attachDocId(getFieldIndex(d, { title: true, bigram: true, trigram: true }), doc.imdb_id) }))
-	.concat((doc.cast||[]).map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true }), doc.imdb_id) }))
+	.concat(director.map(function(d) { return attachDocId(getFieldIndex(d, { title: true, bigram: true, trigram: true, fraction: director.length }), doc.imdb_id) }))
+	.concat(cast.map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true, fraction: cast.length }), doc.imdb_id) }))
+	//.concat(writer.map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true, fraction: writer.length }), doc.imdb_id) }))
+	//.concat(keywords.map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true, fraction: keywords.length/*, boost: 1.5*/ }), doc.imdb_id) }))
 	);
 
 	return idx;
@@ -66,7 +70,8 @@ function getFieldIndex(field, fieldConf)
 		metaphone: true,
 		bigram: false,
 		trigram: false,
-		boost: 1
+		boost: 1,
+		fraction: 1 // for the vector space model, if this string is a fraction of an indexed field (e.g. array), divide by how many strings we have
 	}, fieldConf || { });
 		
 	/*
@@ -80,29 +85,29 @@ function getFieldIndex(field, fieldConf)
 	if (opts.stemmer) tokens =_.map(tokens, stemmer); // TODO: multi-lingual
 	if (opts.metaphone) tokens = _.map(tokens, function(t) { return metaphone(t) });
 
-	var jn = function(t) { return t.join(" ") };	
+	var jn = function(t) { return t.join(" ") }, score = getTokensScoring.bind(null, opts);
 	
 	var res = {};
-	res.idx = getTokensScoring(opts.boost/*1*/, tokens);
-	res.idxExact = getTokensScoring(opts.boost/*1.5*/, exactTokens);
+	res.idx = score(tokens);
+	res.idxExact = score(exactTokens);
 	if (opts.bigram) {
-		res.idxBigram = getTokensScoring(opts.boost/**2*/, NGrams.bigrams(tokens).map(jn), tokens);
-		res.idxExactBigram = getTokensScoring(opts.boost/**2.5*/, NGrams.bigrams(exactTokens).map(jn), exactTokens);
+		res.idxBigram = score(NGrams.bigrams(tokens).map(jn), tokens);
+		res.idxExactBigram = score(NGrams.bigrams(exactTokens).map(jn), exactTokens);
 	}
 	if (opts.trigram) {
-		res.idxTrigram = getTokensScoring(opts.boost/**3*/, NGrams.trigrams(tokens).map(jn), tokens);
-		res.idxExactTrigram = getTokensScoring(opts.boost/**3.5*/, NGrams.trigrams(exactTokens).map(jn), exactTokens);
+		res.idxTrigram = score(NGrams.trigrams(tokens).map(jn), tokens);
+		res.idxExactTrigram = score(NGrams.trigrams(exactTokens).map(jn), exactTokens);
 	}
 	return res;
 };
 
-function getTokensScoring(boost, tokens, origTokens)
+function getTokensScoring(opts, tokens, origTokens)
 {
 	return _.zipObject(tokens, tokens.map(function(token, i) {
 		// Calculate score
 		// For now, we assume all tokens are equally important; in the future, we'll have TD-IDF's
 		var tVec = token.split(" ");
-		return (_.intersection(tVec, origTokens || tokens).length / (tVec.length * tokens.length)) * boost;
+		return ((_.intersection(tVec, origTokens || tokens).length / (tVec.length * tokens.length * opts.fraction)) + 1) * opts.boost;
 	}));
 };
 
