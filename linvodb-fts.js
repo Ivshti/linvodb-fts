@@ -66,7 +66,8 @@ function getFieldIndex(field, fieldConf)
 		metaphone: true,
 		bigram: false,
 		trigram: false,
-		boost: 1
+		boost: 1,
+		fraction: 1 // for the vector space model, if this string is a fraction of an indexed field (e.g. array), divide by how many strings we have
 	}, fieldConf || { });
 		
 	/*
@@ -102,7 +103,7 @@ function getTokensScoring(opts, tokens, origTokens)
 		// Calculate score
 		// For now, we assume all tokens are equally important; in the future, we'll have TD-IDF's
 		var tVec = token.split(" ");
-		return (_.intersection(tVec, origTokens || tokens).length / (tVec.length * tokens.length)) * opts.boost;
+		return ((_.intersection(tVec, origTokens || tokens).length / (tVec.length * tokens.length * opts.fraction)) + 1) * opts.boost;
 	}));
 };
 
