@@ -37,10 +37,11 @@ metaStream.on("close", function() {
 		var start = Date.now();
 		return function(err, res) { 
 			var time = Date.now()-start;
+			var resCount = res.length;
 			Metadata.find({ imdb_id: { $in: _.pluck(res.slice(0, 20), "id") } }).lean().exec(function(err, meta) {
 				var meta = _.indexBy(meta, "imdb_id");
 				var results =  res.slice(0, 20).map(function(x) { meta[x.id].score=x.score; return meta[x.id] });
-				console.log(name, time, _.map(results, function(x) { return _.pick(x, "name", "score") }));
+				console.log(name, time+"ms", resCount+" results", _.map(results, function(x) { return _.pick(x, "name", "score") }));
 			});
 			 
 		};
@@ -57,6 +58,9 @@ metaStream.on("close", function() {
 	
 	textSearch.query("christian bale", queryCb("christian bale"));
 	textSearch.query("jordan belfort", queryCb("jordan belfort"));
+	textSearch.query("following", queryCb("following"));
+	textSearch.query("big bang", queryCb("big bang"));
+
 	//textSearch.query("game th", queryCb);
 	//textSearch.query("america", queryCb);
 	
