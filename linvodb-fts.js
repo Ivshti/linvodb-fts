@@ -20,7 +20,7 @@ function LinvoFTS()
 	self.index = function(doc, idxCfg) {
 		var docIdx = getDocumentIndex(doc, idxCfg);
 		_.merge(indexes, docIdx);
-		Object.keys(docIdx.idxExact).forEach(function(token) { completer.addElement(token) });
+		if (docIdx.idxExact) _.each(docIdx.idxExact, function(token) { completer.addElement(token) });
 	};
 	self.query = function(query, callback) { 
 		return callback(null, applyQueryString(indexes, completer, query));
@@ -36,21 +36,18 @@ function LinvoFTS()
  */
 function getDocumentIndex(doc, idxConf)
 {
-	var idx = { };
+	var idx = { }, docTrav = traverse(doc);
 	// for each field in idxConf, run getFieldIndex and merge into idx
-
-	// TEMP test
-	var cast = doc.cast || [], director = doc.director || [], writer = doc.writer || [], keywords = doc.keywords || [];
-	// TODO: index writer, keywords
-	return mergeIndexes([
-		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 2.5 }), doc.imdb_id),
-		//attachDocId(getFieldIndex(doc.description||"", { boost: 1.5/*, bigram: true*/ }), doc.imdb_id),  // boost?
-	]
-	.concat(director.map(function(d) { return attachDocId(getFieldIndex(d, { title: true, bigram: true, trigram: true, fraction: director.length }), doc.imdb_id) }))
-	.concat(cast.map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true, fraction: cast.length }), doc.imdb_id) }))
-	//.concat(writer.map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true, fraction: writer.length }), doc.imdb_id) }))
-	//.concat(keywords.map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true, fraction: keywords.length/*, boost: 1.5*/ }), doc.imdb_id) }))
-	);
+	
+	_.each(idxConf, function(fieldCfg, key)
+	{
+		var field = docTrav.get(key.split("."));
+		if (! field) return;
+		traverse(field).forEach(function(fieldVal)
+		{
+			console.log(fieldVal, fieldConf):
+		});
+	});
 
 	return idx;
 };
