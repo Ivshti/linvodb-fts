@@ -60,11 +60,22 @@ metaStream.on("close", function() {
 	};
 	
 	/*
+	textSearch.query("how i m", queryCb("how i m"));
+	textSearch.query("game of th", queryCb("game of t"));
+	textSearch.query("game thr", queryCb("game thr"));
+	textSearch.query("american ps", queryCb("american ps"));
+	textSearch.query("american p", queryCb("american p"));
+	*/
+		
+	
 	textSearch.query("wall street", queryCb("wall street")); // 50 objects -> 1ms, 500 objects -> 1ms
 	textSearch.query("wolf of", queryCb("wolf of"));
 	textSearch.query("wolf street", queryCb("wolf street"));
 	textSearch.query("wolf of wall", queryCb("wolf of wall"));
-	*/
+	
+	textSearch.query("game of th", queryCb("game of t"));
+	textSearch.query("american ps", queryCb("american ps"));
+
 	//textSearch.query("psycho", queryCb());
 	
 	textSearch.query("american psycho", queryCb("american psycho")); 
@@ -78,12 +89,6 @@ metaStream.on("close", function() {
 	//textSearch.query("following", queryCb("following"));
 	//textSearch.query("big bang", queryCb("big bang"));
 
-	textSearch.query("how i m", queryCb("how i m"));
-	textSearch.query("game of t", queryCb("game of t"));
-	textSearch.query("game thr", queryCb("game thr"));
-	textSearch.query("american ps", queryCb("american ps"));
-	textSearch.query("american p", queryCb("american p"));
-	
 	textSearch.query("serial killer", queryCb("serial killer"));
 	
 	
