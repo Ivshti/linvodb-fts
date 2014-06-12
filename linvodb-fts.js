@@ -25,8 +25,7 @@ function LinvoFTS()
 	self.query = function(query, callback) { 
 		return callback(null, applyQueryString(indexes, completer, query));
 	};
-	
-	
+
 	return this;
 };
 
@@ -150,10 +149,11 @@ function applyQueryString(indexes, completer, queryStr)
 	
 	var tokens = tokenizer.tokenize(queryStr.toLowerCase()),
 		token = function(i) { return tokens[tokens.length+i] },
-		partialStr = tokens.pop(),
-		suggestions = completer.search(partialStr);
+		suggestions = null;
 	
-	if (suggestions.length > 1) suggestions.forEach(function(suggestion, i)
+	// don't apply suggestions if the user is about to type another word - last one is complete
+	if (! queryStr.match(" $")) suggestions = completer.search(tokens.pop());
+	if (suggestions && suggestions.length > 1) suggestions.forEach(function(suggestion, i)
 	{
 		// boost the first suggestion
 		var score = ( i==0 ? 2 : 1 ) / Math.min(20, suggestions.length);

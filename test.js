@@ -65,7 +65,16 @@ metaStream.on("close", function() {
 			 
 		};
 	};
-	
+
+	/*
+	textSearch.query("the se", queryCb("the se"));
+	textSearch.query("the secret l", queryCb("the secret l"));
+	textSearch.query("the secret li", queryCb("the secret li"));
+	textSearch.query("the secret life o", queryCb("the secret life o"));
+	textSearch.query("the secret life of ", queryCb("the secret life of "));
+	textSearch.query("the secret life of", queryCb("the secret life of"));
+	*/
+
 /*
 	textSearch.query("how i me", queryCb("how i me"));	
 	textSearch.query("how i m", queryCb("how i m"));
@@ -81,6 +90,7 @@ metaStream.on("close", function() {
 	
 	textSearch.query("game of th", queryCb("game of t"));
 	textSearch.query("american ps", queryCb("american ps"));
+
 
 	//textSearch.query("psycho", queryCb());
 	
