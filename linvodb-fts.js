@@ -153,14 +153,14 @@ function applyQueryString(indexes, completer, queryStr)
 		partialStr = tokens.pop(),
 		suggestions = completer.search(partialStr);
 	
-	if (suggestions.length > 1 && suggestions.length < 100) suggestions.forEach(function(suggestion, i)
+	if (suggestions.length > 1) suggestions.forEach(function(suggestion, i)
 	{
 		// boost the first suggestion
-		var score = idxQuery.idxExact[partialStr] * ( i==0 ? 2 : 1 ) / suggestions.length;
-		idxQuery.idxExact[suggestion] = score;
-				
-		if (token(-1)) idxQuery.idxExactBigram[ token(-1)+" "+suggestion ] = score;
-		if (token(-2)) idxQuery.idxExactTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score;
+		var score = ( i==0 ? 2 : 1 ) / Math.min(20, suggestions.length);
+		
+		if (suggestions.length < 100) idxQuery.idxExact[suggestion] = score;
+		if (token(-1)) idxQuery.idxExactBigram[ token(-1)+" "+suggestion ] = score*2; // s+1 / suggestions.length
+		if (token(-2)) idxQuery.idxExactTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score*3;
 	});
 	
 	return applyQuery(indexes, idxQuery); // The indexes we will walk for that query
