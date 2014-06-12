@@ -11,7 +11,7 @@ var Metadata = mongoose.get("cinematic-torrents-connection").model("Metadata", n
 
 var textSearch = new LinvoFTS();
 var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: true }, type: /series|movie/ })
-	.sort({ seeders: -1 }).limit(50).lean().stream();
+	.sort({ seeders: -1 })/*.limit(50)*/.lean().stream();
 
 var indexTime = 0, docsCount = 0;
 metaStream.on("data", function(meta) {
@@ -77,6 +77,8 @@ metaStream.on("close", function() {
 
 	textSearch.query("game thr", queryCb("game thr"));
 	textSearch.query("american ps", queryCb("american ps"));
+	
+	textSearch.query("serial killer", queryCb("serial killer"));
 	
 	
 	//process.nextTick(function() { process.exit() });
