@@ -2,7 +2,7 @@ var natural = require("natural");
 var _ = require("lodash");
 var traverse = require("traverse");
 var Autocomplete = require("autocomplete");
-
+var partialSort = require("./partial-sort").partialSort;
 /*
  * TODO: do this in a separate thread?
  * TODO: more class-oriented structure, e.g. indexes to have .getDocuments(indexName, token) or something
@@ -150,9 +150,7 @@ function applyQuery(indexes, idxQuery)
 
 	traverse(idxQuery).forEach(function(searchTokenScore) {
 		if (!this.isLeaf || isNaN(searchTokenScore)) return; // We're interested only in leaf nodes (token scores)
-
-		// TODO: partial queries
-
+		
 		var indexBoost = 1;
 		if (this.path[0].match("Bigram")) indexBoost = 2;
 		if (this.path[0].match("Trigram")) indexBoost = 3;
@@ -165,11 +163,9 @@ function applyQuery(indexes, idxQuery)
 		});
 	});
 	
-	// TODO: score threshold: how about 3?
-	return _.chain(resMap).pairs()
-		.map(function(p) { return{ id: p[0], score: p[1] } })
-		.sortBy("score")
-		.reverse().value();
+	var scorePairs = [];
+	_.each(resMap, function(val, key) { scorePairs.push({ id: key, score: val }) });
+	return partialSort(scorePairs, "score", 100);
 };
 
 
