@@ -16,8 +16,10 @@ module.exports.partialSort = function(items, key, k) {
       items.splice(bisect(items, x), 0, x);
     }
     
-	var largest = items.slice(0, k).sort(function(a,b) { return b[key]-a[key] }),
-		max = largest[k-1][key];
+    if (! items.length) return[];
+    
+	var largest = items.slice(0, Math.min(items.length, k)).sort(function(a,b) { return b[key]-a[key] }),
+		max = largest[largest.length-1][key];
 	for (var i = k, len = items.length; i < len; ++i) {
 		var item = items[i][key];
 		if (item > max) {

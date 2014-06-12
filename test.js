@@ -11,7 +11,7 @@ var Metadata = mongoose.get("cinematic-torrents-connection").model("Metadata", n
 
 var textSearch = new LinvoFTS();
 var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: true }, type: /series|movie/ })
-	.sort({ seeders: -1 })/*.limit(500)*/.lean().stream();
+	.sort({ seeders: -1 })/*.limit(50)*/.lean().stream();
 
 var indexTime = 0, docsCount = 0;
 metaStream.on("data", function(meta) {
@@ -38,7 +38,7 @@ metaStream.on("close", function() {
 		return function(err, res) { 
 			var time = Date.now()-start;
 			var resCount = res.length;
-			Metadata.find({ imdb_id: { $in: _.pluck(res.slice(0, 20), "id") } }).lean().exec(function(err, meta) {
+			Metadata.find({ imdb_id: { $in: _.pluck(res.slice(0, 20), "id") } }, { name: 1, cast: 1, director: 1, imdb_id: 1 }).lean().exec(function(err, meta) {
 				var meta = _.indexBy(meta, "imdb_id");
 				var results =  res.slice(0, 20).map(function(x) { meta[x.id].score=x.score; return meta[x.id] });
 				console.log(name, time+"ms", resCount+" results", _.map(results, function(x) { return _.pick(x, "name", "score") }));
@@ -72,7 +72,7 @@ metaStream.on("close", function() {
 
 // First test: 77MB for 1000 docs
 // 91 MB for 3000
-// 129 MB for ~16000 objects
-// 270 MB for 20 000, title+cast+directors
-// ~ 400MB for 20 000 docs, title+desc+cast
+
+// 115 MB for 20 000, title+cast+directors
+// ~400MB for 20 000 docs, title+desc+cast
 // 730MB for 20 000 docs with bigrams for desc 
