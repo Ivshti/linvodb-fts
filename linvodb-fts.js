@@ -143,9 +143,26 @@ function mergeIndexes(indexes)
 
 function applyQueryString(indexes, completer, queryStr)
 {
-	var partialStr = tokenizer.tokenize(queryStr.toLowerCase()).pop();
-	console.log(completer.search(partialStr));
-	return applyQuery(indexes, getFieldIndex(queryStr, { bigram: true, trigram: true, title: true })); // The indexes we will walk for that query
+	/* 
+	 * Supplementing the query with suggestions ensures we can do instant search-style queries
+	 */
+	var idxQuery = getFieldIndex(queryStr, { bigram: true, trigram: true, title: true });
+	
+	var tokens = tokenizer.tokenize(queryStr.toLowerCase()),
+		token = function(i) { return tokens[tokens.length+i] },
+		partialStr = tokens.pop(),
+		suggestions = completer.search(partialStr);
+	
+	if (suggestions.length > 1) suggestions.forEach(function(suggestion, i)
+	{
+		// boost the first suggestion
+		var score = idxQuery.idxExact[partialStr] * ( i==0 ? 2 : 1 ) / suggestions.length;
+		idxQuery.idxExact[suggestion] = score;
+		if (token(-1)) idxQuery.idxExactBigram[ token(-1)+" "+suggestion ] = score;
+		if (token(-2)) idxQuery.idxExactTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score;
+	});
+	
+	return applyQuery(indexes, idxQuery); // The indexes we will walk for that query
 };
 
 function applyQuery(indexes, idxQuery)
