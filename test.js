@@ -22,14 +22,21 @@ metaStream.on("data", function(meta) {
 metaStream.on("close", function() { 
 	//console.log(textSearch.__indexes);
 	console.log("Indexing time: "+indexTime+"ms, docs: "+docsCount);
-	
-	console.log("idx",Object.keys(textSearch.__indexes.idx).length);	
+
+	var avgTokens = function(idx) {
+		var keys = Object.keys(idx);
+		return keys.map(function(t) {return Object.keys(idx[t]).length }).reduce(function(a,b){return a+b},0) / keys.length
+
+	};	
+	console.log("idx",Object.keys(textSearch.__indexes.idx).length, avgTokens(textSearch.__indexes.idx));	
 	console.log("idxBigram",Object.keys(textSearch.__indexes.idxBigram).length);	
 	console.log("idxTrigram",Object.keys(textSearch.__indexes.idxTrigram).length);	
 
 	console.log("idxExact", Object.keys(textSearch.__indexes.idxExact).length);	
 	console.log("idxExactBigram", Object.keys(textSearch.__indexes.idxExactBigram).length);	
 	console.log("idxExactTrigram", Object.keys(textSearch.__indexes.idxExactTrigram).length);	
+	
+
 
 	console.log("Finished indexing documents");
 	
