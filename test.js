@@ -16,6 +16,7 @@ var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: t
 var indexTime = 0, docsCount = 0;
 metaStream.on("data", function(meta) {
 	var start = Date.now(); // LOGGING
+	meta.id = meta.imdb_id;
 	textSearch.index(meta, {
 		name: { title: true, bigram: true, trigram: true, boost: 2.5 },
 		cast: { title: true, bigram: true, trigram: true },
