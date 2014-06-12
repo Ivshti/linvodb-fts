@@ -2,7 +2,7 @@ var natural = require("natural");
 var _ = require("lodash");
 var traverse = require("traverse");
 var Autocomplete = require("autocomplete");
-
+var partialSort = require("./partial-sort").partialSort;
 /*
  * TODO: do this in a separate thread?
  * TODO: more class-oriented structure, e.g. indexes to have .getDocuments(indexName, token) or something
@@ -20,7 +20,7 @@ function LinvoFTS()
 	self.index = function(doc, idxCfg) {
 		var docIdx = getDocumentIndex(doc, idxCfg);
 		_.merge(indexes, docIdx);
-		Object.keys(docIdx.idxExact).forEach(function(token) { completer.addElement(token) });
+		if (docIdx.idxExact) _.each(docIdx.idxExact, function(val, token) { completer.addElement(token) });
 	};
 	self.query = function(query, callback) { 
 		return callback(null, applyQueryString(indexes, completer, query));
@@ -36,27 +36,33 @@ function LinvoFTS()
  */
 function getDocumentIndex(doc, idxConf)
 {
-	var idx = { };
-	// for each field in idxConf, run getFieldIndex and merge into idx
+	var idx = { }, docTrav = traverse(doc);
 
-	// TEMP test
-	var cast = doc.cast || [], director = doc.director || [], writer = doc.writer || [], keywords = doc.keywords || [];
-	// TODO: index writer, keywords
-	return mergeIndexes([
-		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 2.5 }), doc.imdb_id),
-		attachDocId(getFieldIndex(doc.description||"", { boost: 1.5/*, bigram: true*/ }), doc.imdb_id),  // boost?
-	]
-	.concat(director.map(function(d) { return attachDocId(getFieldIndex(d, { title: true, bigram: true, trigram: true, fraction: director.length }), doc.imdb_id) }))
-	.concat(cast.map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true, fraction: cast.length }), doc.imdb_id) }))
-	//.concat(writer.map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true, fraction: writer.length }), doc.imdb_id) }))
-	//.concat(keywords.map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true, fraction: keywords.length/*, boost: 1.5*/ }), doc.imdb_id) }))
-	);
+	// For each field in idxConf, run getFieldIndex and merge into idx	
+	_.each(idxConf, function(fieldCfg, key)
+	{
+		var field = docTrav.get(key.split("."));
+		if (! field) return;
+		
+		// Get leaf strings
+		var strings = [];
+		traverse(field).forEach(function(n)
+		{
+			if (this.isLeaf && typeof(n)=="string")
+				strings.push(n);
+		});
+		
+		strings.forEach(function(str) { 
+			mergeIndexes([ idx, attachDocId(getFieldIndex(str, _.extend({ fraction: strings.length }, fieldCfg)), doc.id) ]);
+		});
+	});
 
 	return idx;
 };
 
 var tokenizer = new natural.WordTokenizer(),
 	stopwords = _.zipObject(natural.stopwords),
+	notStopWord = function(t) { return !stopwords.hasOwnProperty(t) },
 	stemmer = natural.PorterStemmer.stem,
 	metaphone = natural.Metaphone.process,
 	NGrams = natural.NGrams;
@@ -83,7 +89,7 @@ function getFieldIndex(field, fieldConf)
 	 */
 	var tokens = tokenizer.tokenize(field.toLowerCase()), exactTokens;
 	if (opts.title) exactTokens = [].concat(tokens);
-	if (opts.stopwords) tokens = _.filter(tokens, function(t) { return !stopwords.hasOwnProperty(t) });
+	if (opts.stopwords) tokens = tokens.filter(notStopWord);
 	if (!opts.title) exactTokens = [].concat(tokens);
 	
 	if (opts.stemmer) tokens =_.map(tokens, stemmer); // TODO: multi-lingual
@@ -93,7 +99,7 @@ function getFieldIndex(field, fieldConf)
 	
 	var res = {};
 	res.idx = score(tokens);
-	res.idxExact = score(exactTokens);
+	res.idxExact = score(exactTokens.filter(notStopWord)); // never index stop words here; only on bi/tri-grams if we have a title
 	if (opts.bigram) {
 		res.idxBigram = score(NGrams.bigrams(tokens).map(jn), tokens);
 		res.idxExactBigram = score(NGrams.bigrams(exactTokens).map(jn), exactTokens);
@@ -137,9 +143,27 @@ function mergeIndexes(indexes)
 
 function applyQueryString(indexes, completer, queryStr)
 {
-	var partialStr = tokenizer.tokenize(queryStr.toLowerCase()).pop();
-	console.log(completer.search(partialStr));
-	return applyQuery(indexes, getFieldIndex(queryStr, { bigram: true, trigram: true, title: true })); // The indexes we will walk for that query
+	/* 
+	 * Supplementing the query with suggestions ensures we can do instant search-style queries
+	 */
+	var idxQuery = getFieldIndex(queryStr, { bigram: true, trigram: true, title: true });
+	
+	var tokens = tokenizer.tokenize(queryStr.toLowerCase()),
+		token = function(i) { return tokens[tokens.length+i] },
+		partialStr = tokens.pop(),
+		suggestions = completer.search(partialStr);
+	
+	if (suggestions.length > 1 && suggestions.length < 100) suggestions.forEach(function(suggestion, i)
+	{
+		// boost the first suggestion
+		var score = idxQuery.idxExact[partialStr] * ( i==0 ? 2 : 1 ) / suggestions.length;
+		idxQuery.idxExact[suggestion] = score;
+				
+		if (token(-1)) idxQuery.idxExactBigram[ token(-1)+" "+suggestion ] = score;
+		if (token(-2)) idxQuery.idxExactTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score;
+	});
+	
+	return applyQuery(indexes, idxQuery); // The indexes we will walk for that query
 };
 
 function applyQuery(indexes, idxQuery)
@@ -149,12 +173,10 @@ function applyQuery(indexes, idxQuery)
 
 	traverse(idxQuery).forEach(function(searchTokenScore) {
 		if (!this.isLeaf || isNaN(searchTokenScore)) return; // We're interested only in leaf nodes (token scores)
-
-		// TODO: partial queries
-
+		
 		var indexBoost = 1;
-		if (this.path[0].match("Bigram")) indexBoost = 2;
-		if (this.path[0].match("Trigram")) indexBoost = 3;
+		if (this.path[0].match("Bigram")) indexBoost = 3;
+		if (this.path[0].match("Trigram")) indexBoost = 5;
 		
 		var indexedScores = idxTrav.get(this.path) || { };
 		_.each(indexedScores, function(score, id) {
@@ -164,11 +186,9 @@ function applyQuery(indexes, idxQuery)
 		});
 	});
 	
-	// TODO: score threshold: how about 3?
-	return _.chain(resMap).pairs()
-		.map(function(p) { return{ id: p[0], score: p[1] } })
-		.sortBy("score")
-		.reverse().value();
+	var scorePairs = [];
+	_.each(resMap, function(val, key) { scorePairs.push({ id: key, score: val }) });
+	return partialSort(scorePairs, "score", 100);
 };
 
 
