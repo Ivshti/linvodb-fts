@@ -44,7 +44,7 @@ function getDocumentIndex(doc, idxConf)
 	// TODO: index writer, keywords
 	return mergeIndexes([
 		attachDocId(getFieldIndex(doc.name, { title: true, bigram: true, trigram: true, boost: 2.5 }), doc.imdb_id),
-		attachDocId(getFieldIndex(doc.description||"", { boost: 1.5/*, bigram: true*/ }), doc.imdb_id),  // boost?
+		//attachDocId(getFieldIndex(doc.description||"", { boost: 1.5/*, bigram: true*/ }), doc.imdb_id),  // boost?
 	]
 	.concat(director.map(function(d) { return attachDocId(getFieldIndex(d, { title: true, bigram: true, trigram: true, fraction: director.length }), doc.imdb_id) }))
 	.concat(cast.map(function(c) { return attachDocId(getFieldIndex(c, { title: true, bigram: true, trigram: true, fraction: cast.length }), doc.imdb_id) }))
@@ -57,6 +57,7 @@ function getDocumentIndex(doc, idxConf)
 
 var tokenizer = new natural.WordTokenizer(),
 	stopwords = _.zipObject(natural.stopwords),
+	notStopWord = function(t) { return !stopwords.hasOwnProperty(t) },
 	stemmer = natural.PorterStemmer.stem,
 	metaphone = natural.Metaphone.process,
 	NGrams = natural.NGrams;
@@ -83,7 +84,7 @@ function getFieldIndex(field, fieldConf)
 	 */
 	var tokens = tokenizer.tokenize(field.toLowerCase()), exactTokens;
 	if (opts.title) exactTokens = [].concat(tokens);
-	if (opts.stopwords) tokens = _.filter(tokens, function(t) { return !stopwords.hasOwnProperty(t) });
+	if (opts.stopwords) tokens = tokens.filter(notStopWord);
 	if (!opts.title) exactTokens = [].concat(tokens);
 	
 	if (opts.stemmer) tokens =_.map(tokens, stemmer); // TODO: multi-lingual
@@ -93,7 +94,7 @@ function getFieldIndex(field, fieldConf)
 	
 	var res = {};
 	res.idx = score(tokens);
-	res.idxExact = score(exactTokens);
+	res.idxExact = score(exactTokens.filter(notStopWord)); // never index stop words here; only on bi/tri-grams if we have a title
 	if (opts.bigram) {
 		res.idxBigram = score(NGrams.bigrams(tokens).map(jn), tokens);
 		res.idxExactBigram = score(NGrams.bigrams(exactTokens).map(jn), exactTokens);
