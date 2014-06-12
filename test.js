@@ -11,12 +11,18 @@ var Metadata = mongoose.get("cinematic-torrents-connection").model("Metadata", n
 
 var textSearch = new LinvoFTS();
 var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: true }, type: /series|movie/ })
-	.sort({ seeders: -1 })/*.limit(50)*/.lean().stream();
+	.sort({ seeders: -1 }).limit(50).lean().stream();
 
 var indexTime = 0, docsCount = 0;
 metaStream.on("data", function(meta) {
 	var start = Date.now(); // LOGGING
-	textSearch.index(meta);
+	textSearch.index(meta, {
+		name: { title: true, bigram: true, trigram: true, boost: 2.5 },
+		cast: { title: true, bigram: true, trigram: true },
+		director: { title: true, bigram: true, trigram: true },
+		writer: { title: true, bigram: true, trigram: true },
+		//description: {  boost: 1.5/*, bigram: true*/ },
+	});
 	indexTime += (Date.now()-start); docsCount++; // LOGGING
 });
 metaStream.on("close", function() { 
@@ -38,6 +44,11 @@ metaStream.on("close", function() {
 		return function(err, res) { 
 			var time = Date.now()-start;
 			var resCount = res.length;
+		
+			// Experimental filtering
+			var above = res[0].score / 2;
+			res = res.filter(function(x) { return x.score > above});
+	
 			Metadata.find({ imdb_id: { $in: _.pluck(res.slice(0, 20), "id") } }, { name: 1, cast: 1, director: 1, imdb_id: 1 }).lean().exec(function(err, meta) {
 				var meta = _.indexBy(meta, "imdb_id");
 				var results =  res.slice(0, 20).map(function(x) { meta[x.id].score=x.score; return meta[x.id] });
@@ -63,8 +74,8 @@ metaStream.on("close", function() {
 	//textSearch.query("following", queryCb("following"));
 	//textSearch.query("big bang", queryCb("big bang"));
 
-	textSearch.query("game thr", queryCb);
-	textSearch.query("american ps", queryCb);
+	textSearch.query("game thr", queryCb("game thr"));
+	textSearch.query("american ps", queryCb("american ps"));
 	
 	
 	//process.nextTick(function() { process.exit() });
