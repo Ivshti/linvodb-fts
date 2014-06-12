@@ -20,7 +20,7 @@ function LinvoFTS()
 	self.index = function(doc, idxCfg) {
 		var docIdx = getDocumentIndex(doc, idxCfg);
 		_.merge(indexes, docIdx);
-		if (docIdx.idxExact) _.each(docIdx.idxExact, function(token) { completer.addElement(token) });
+		if (docIdx.idxExact) _.each(docIdx.idxExact, function(val, token) { completer.addElement(token) });
 	};
 	self.query = function(query, callback) { 
 		return callback(null, applyQueryString(indexes, completer, query));
@@ -37,15 +37,23 @@ function LinvoFTS()
 function getDocumentIndex(doc, idxConf)
 {
 	var idx = { }, docTrav = traverse(doc);
-	// for each field in idxConf, run getFieldIndex and merge into idx
-	
+
+	// For each field in idxConf, run getFieldIndex and merge into idx	
 	_.each(idxConf, function(fieldCfg, key)
 	{
 		var field = docTrav.get(key.split("."));
 		if (! field) return;
-		traverse(field).forEach(function(fieldVal)
+		
+		// Get leaf strings
+		var strings = [];
+		traverse(field).forEach(function(n)
 		{
-			console.log(fieldVal, fieldConf):
+			if (this.isLeaf && typeof(n)=="string")
+				strings.push(n);
+		});
+		
+		strings.forEach(function(str) { 
+			mergeIndexes([ idx, attachDocId(getFieldIndex(str, _.extend({ fraction: strings.length }, fieldCfg)), doc.id) ]);
 		});
 	});
 
