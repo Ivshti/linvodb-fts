@@ -153,11 +153,12 @@ function applyQueryString(indexes, completer, queryStr)
 		partialStr = tokens.pop(),
 		suggestions = completer.search(partialStr);
 	
-	if (suggestions.length > 1) suggestions.forEach(function(suggestion, i)
+	if (suggestions.length > 1 && suggestions.length < 100) suggestions.forEach(function(suggestion, i)
 	{
 		// boost the first suggestion
 		var score = idxQuery.idxExact[partialStr] * ( i==0 ? 2 : 1 ) / suggestions.length;
 		idxQuery.idxExact[suggestion] = score;
+				
 		if (token(-1)) idxQuery.idxExactBigram[ token(-1)+" "+suggestion ] = score;
 		if (token(-2)) idxQuery.idxExactTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score;
 	});
@@ -174,8 +175,8 @@ function applyQuery(indexes, idxQuery)
 		if (!this.isLeaf || isNaN(searchTokenScore)) return; // We're interested only in leaf nodes (token scores)
 		
 		var indexBoost = 1;
-		if (this.path[0].match("Bigram")) indexBoost = 2;
-		if (this.path[0].match("Trigram")) indexBoost = 3;
+		if (this.path[0].match("Bigram")) indexBoost = 3;
+		if (this.path[0].match("Trigram")) indexBoost = 5;
 		
 		var indexedScores = idxTrav.get(this.path) || { };
 		_.each(indexedScores, function(score, id) {
