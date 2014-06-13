@@ -52,7 +52,8 @@ function getDocumentIndex(doc, idxConf)
 		});
 		
 		strings.forEach(function(str) { 
-			mergeIndexes([ idx, attachDocId(getFieldIndex(str, _.extend({ fraction: strings.length }, fieldCfg)), doc.id) ]);
+			var fieldIdx = getFieldIndex(str, _.extend({ fraction: strings.length }, fieldCfg));
+			mergeIndexes([ idx, attachDocScoreMap(fieldIdx, doc.id, key) ]);
 		});
 	});
 
@@ -120,12 +121,13 @@ function getTokensScoring(opts, tokens, origTokens)
 	}));
 };
 
-function attachDocId(idx, id)
+function attachDocScoreMap(idx, id, key)
 {
 	_.each(idx, function(index) {
 		_.each(index, function(val, token) {
 			var tuple = {};
 			tuple[id] = val;
+			tuple["__"+key] = 1; // keep stats on which keys is this token retrieved from
 			index[token] = tuple;
 		});
 	});
@@ -180,6 +182,7 @@ function applyQuery(indexes, idxQuery)
 		
 		var indexedScores = idxTrav.get(this.path) || { };
 		_.each(indexedScores, function(score, id) {
+			if (id[0] == "_") return; // special case, ID's cannot begin with _, that's metadata
 			if (! resMap[id]) resMap[id] = 0;
 			//resMap[id] += score * (searchTokenScore+1)*(searchTokenScore+1);
 			resMap[id] += (score /* * searchTokenScore*/ * indexBoost); // Think of the model here?

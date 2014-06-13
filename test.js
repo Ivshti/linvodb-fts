@@ -41,9 +41,9 @@ metaStream.on("close", function() {
 
 	console.log("idxExact", Object.keys(textSearch.__indexes.idxExact).length);	
 	console.log("idxExactBigram", Object.keys(textSearch.__indexes.idxExactBigram).length);	
-	console.log("idxExactTrigram", Object.keys(textSearch.__indexes.idxExactTrigram).length);	
-	
+	console.log("idxExactTrigram", Object.keys(textSearch.__indexes.idxExactTrigram).length);
 
+	//console.log();
 
 	console.log("Finished indexing documents");
 	
@@ -102,7 +102,7 @@ metaStream.on("close", function() {
 	
 
 	//textSearch.query("jordan belfort", queryCb("jordan belfort"));
-	//textSearch.query("following", queryCb("following"));
+	textSearch.query("following", queryCb("following"));
 	//textSearch.query("big bang", queryCb("big bang"));
 
 	textSearch.query("serial killer", queryCb("serial killer"));
