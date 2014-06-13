@@ -20,7 +20,9 @@ function LinvoFTS()
 	self.index = function(doc, idxCfg) {
 		var docIdx = getDocumentIndex(doc, idxCfg);
 		_.merge(indexes, docIdx);
-		if (docIdx.idxExact) _.each(docIdx.idxExact, function(val, token) { completer.addElement(token) });
+		if (docIdx.idxExact) _.each(docIdx.idxExact, function(val, token) { 
+			if (token.length>1) completer.addElement(token);
+		});
 	};
 	self.query = function(query, callback) { 
 		return callback(null, applyQueryString(indexes, completer, query));
