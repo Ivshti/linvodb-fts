@@ -43,7 +43,23 @@ metaStream.on("close", function() {
 	console.log("idxExactBigram", Object.keys(textSearch.__indexes.idxExactBigram).length);	
 	console.log("idxExactTrigram", Object.keys(textSearch.__indexes.idxExactTrigram).length);
 
-	//console.log();
+	/* Calculate the most important bigrams contained in the description
+	* A test in order to drop un-important bigrams/trigrams
+	*/ 
+	/*
+	var bigrams = [];
+	_.pairs(textSearch.__indexes.idxExactBigram).forEach(function(idxItem) {
+		var token = idxItem[0],
+			scoreMap = idxItem[1];
+		if (! scoreMap.__description) return;
+		var tokenScore = _.pairs(scoreMap)
+			.map(function(x) { if (x[0][0]=="_") return 0; return x[1] })
+			.reduce(function(a,b) {return a+b}, 0);
+		bigrams.push([token, tokenScore, Object.keys(scoreMap).length]);
+	});
+	console.log(bigrams.sort(function(a,b){ return b[1] - a[1] }).slice(0, 200));
+	return;
+	*/
 
 	console.log("Finished indexing documents");
 
