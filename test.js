@@ -22,7 +22,7 @@ metaStream.on("data", function(meta) {
 		cast: { title: true, bigram: true, trigram: true },
 		director: { title: true, bigram: true, trigram: true },
 		writer: { title: true, bigram: true, trigram: true },
-		//description: {  boost: 1.5/*, bigram: true*/ },
+		//description: {  boost: 1, bigram: true },
 	});
 	indexTime += (Date.now()-start); docsCount++; // LOGGING
 });
@@ -46,7 +46,7 @@ metaStream.on("close", function() {
 	//console.log();
 
 	console.log("Finished indexing documents");
-	
+
 	var queryCb = function(name) { 
 		var start = Date.now();
 		return function(err, res) { 
