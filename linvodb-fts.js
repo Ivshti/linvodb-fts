@@ -79,6 +79,7 @@ function getFieldIndex(field, fieldConf)
 	var opts = _.extend({
 		stopwords: true, // false for titles, at least for the exact index
 		stemmer: true,
+		stemExact: false, // TODO: option to stem words in the exact index
 		metaphone: true,
 		bigram: false,
 		trigram: false,
