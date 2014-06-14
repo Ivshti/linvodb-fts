@@ -22,7 +22,7 @@ metaStream.on("data", function(meta) {
 		cast: { title: true, bigram: true, trigram: true },
 		director: { title: true, bigram: true, trigram: true },
 		writer: { title: true, bigram: true, trigram: true },
-		//description: {  boost: 1, bigram: true },
+		//description: {  boost: 1, bigram: true, stemExact: true },
 	});
 	indexTime += (Date.now()-start); docsCount++; // LOGGING
 });
@@ -46,6 +46,7 @@ metaStream.on("close", function() {
 	/* Calculate the most important bigrams contained in the description
 	* A test in order to drop un-important bigrams/trigrams
 	*/ 
+	
 	/*
 	var bigrams = [];
 	_.pairs(textSearch.__indexes.idxExactBigram).forEach(function(idxItem) {
@@ -57,7 +58,7 @@ metaStream.on("close", function() {
 			.reduce(function(a,b) {return a+b}, 0);
 		bigrams.push([token, tokenScore, Object.keys(scoreMap).length]);
 	});
-	console.log(bigrams.sort(function(a,b){ return b[1] - a[1] }).slice(0, 200));
+	console.log(bigrams.sort(function(a,b){ return b[1] - a[1] }).slice(0, 400));
 	return;
 	*/
 
