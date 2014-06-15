@@ -157,12 +157,15 @@ function applyQueryString(indexes, completer, queryStr)
 	
 	var tokens = tokenizer.tokenize(queryStr.toLowerCase()),
 		token = function(i) { return tokens[tokens.length+i] },
+		lastToken = tokens.pop(),
 		suggestions = null;
 	
 	// don't apply suggestions if the user is about to type another word - last one is complete
-	if (completer && !queryStr.match(" $")) suggestions = completer.search(tokens.pop());
+	if (completer && !queryStr.match(" $")) suggestions = completer.search(lastToken);
 	if (suggestions && suggestions.length > 1) suggestions.forEach(function(suggestion, i)
 	{
+		if (suggestion == lastToken) return; // don't override the searches for the original token
+
 		// boost the first suggestion
 		var score = ( i==0 ? 2 : 1 ) / Math.min(20, suggestions.length);
 		
@@ -170,7 +173,7 @@ function applyQueryString(indexes, completer, queryStr)
 		if (token(-1)) idxQuery.idxExactBigram[ token(-1)+" "+suggestion ] = score*2; // s+1 / suggestions.length
 		if (token(-2)) idxQuery.idxExactTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score*3;
 	});
-	
+		
 	return applyQuery(indexes, idxQuery); // The indexes we will walk for that query
 };
 
