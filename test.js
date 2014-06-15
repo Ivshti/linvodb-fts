@@ -26,6 +26,8 @@ metaStream.on("data", function(meta) {
 	});
 	indexTime += (Date.now()-start); docsCount++; // LOGGING
 });
+	textSearch.query("game thr", function() { });
+
 metaStream.on("close", function() { 
 	//console.log(textSearch.__indexes);
 	console.log("Indexing time: "+indexTime+"ms, docs: "+docsCount);
@@ -106,7 +108,8 @@ metaStream.on("close", function() {
 	textSearch.query("wolf of wall", queryCb("wolf of wall"));
 	
 	textSearch.query("game of th", queryCb("game of t"));
-	textSearch.query("american ps", queryCb("american ps"));
+	//textSearch.query("american ps", queryCb("american ps"));
+	textSearch.query("game thr", queryCb("game thr"));
 
 
 	//textSearch.query("psycho", queryCb());

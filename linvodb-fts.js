@@ -120,7 +120,10 @@ function getTokensScoring(opts, tokens, origTokens)
 		// Calculate score
 		// For now, we assume all tokens are equally important; in the future, we'll have TD-IDF's
 		var tVec = token.split(" ");
-		return ((_.intersection(tVec, origTokens || tokens).length / (tVec.length * tokens.length * opts.fraction)) + 1) * opts.boost;
+		return opts.boost * ( 1 + (
+			(_.intersection(tVec, origTokens || tokens).length + tokens.length-i) /
+			(tVec.length * tokens.length * opts.fraction)
+		));
 	}));
 };
 
@@ -182,13 +185,13 @@ function applyQuery(indexes, idxQuery)
 		var indexBoost = 1;
 		if (this.path[0].match("Bigram")) indexBoost = 3;
 		if (this.path[0].match("Trigram")) indexBoost = 5;
+		indexBoost += (this.parent.keys.length - this.parent.keys.indexOf(this.key))/this.parent.keys.length; // Include the position of the token into the calculation
 		
 		var indexedScores = idxTrav.get(this.path) || { };
 		_.each(indexedScores, function(score, id) {
 			if (id[0] == "_") return; // special case, ID's cannot begin with _, that's metadata
 			if (! resMap[id]) resMap[id] = 0;
-			//resMap[id] += score * (searchTokenScore+1)*(searchTokenScore+1);
-			resMap[id] += (score /* * searchTokenScore*/ * indexBoost); // Think of the model here?
+			resMap[id] += score * indexBoost;
 		});
 	});
 	
