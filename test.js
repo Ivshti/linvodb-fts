@@ -109,9 +109,11 @@ metaStream.on("close", function() {
 	
 	textSearch.query("game of th", queryCb("game of t"));
 	textSearch.query("american ps", queryCb("american ps"));
+	textSearch.query("american p", queryCb("american p"));
+
 	//textSearch.query("game thr", queryCb("game thr"));
 
-	textSearch.query("her", queryCb("her"));
+	textSearch.query("her", queryCb("her")); // TODO: her is not in the first place because hercules gets bigger points
 
 	//textSearch.query("psycho", queryCb());
 	

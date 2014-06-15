@@ -102,7 +102,7 @@ function getFieldIndex(field, fieldConf)
 	
 	var res = {};
 	res.idx = score(tokens);
-	res.idxExact = score(exactTokens.filter(notStopWord)); // never index stop words here; only on bi/tri-grams if we have a title
+	res.idxExact = score(exactTokens);
 	if (opts.bigram) {
 		res.idxBigram = score(NGrams.bigrams(tokens).map(jn), tokens);
 		res.idxExactBigram = score(NGrams.bigrams(exactTokens).map(jn), exactTokens);
