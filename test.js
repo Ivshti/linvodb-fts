@@ -108,9 +108,10 @@ metaStream.on("close", function() {
 	textSearch.query("wolf of wall", queryCb("wolf of wall"));
 	
 	textSearch.query("game of th", queryCb("game of t"));
-	//textSearch.query("american ps", queryCb("american ps"));
-	textSearch.query("game thr", queryCb("game thr"));
+	textSearch.query("american ps", queryCb("american ps"));
+	//textSearch.query("game thr", queryCb("game thr"));
 
+	textSearch.query("her", queryCb("her"));
 
 	//textSearch.query("psycho", queryCb());
 	

@@ -160,7 +160,7 @@ function applyQueryString(indexes, completer, queryStr)
 		suggestions = null;
 	
 	// don't apply suggestions if the user is about to type another word - last one is complete
-	if (! queryStr.match(" $")) suggestions = completer.search(tokens.pop());
+	if (completer && !queryStr.match(" $")) suggestions = completer.search(tokens.pop());
 	if (suggestions && suggestions.length > 1) suggestions.forEach(function(suggestion, i)
 	{
 		// boost the first suggestion
