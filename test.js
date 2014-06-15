@@ -26,7 +26,6 @@ metaStream.on("data", function(meta) {
 	});
 	indexTime += (Date.now()-start); docsCount++; // LOGGING
 });
-	textSearch.query("game thr", function() { });
 
 metaStream.on("close", function() { 
 	//console.log(textSearch.__indexes);
@@ -94,23 +93,19 @@ metaStream.on("close", function() {
 	textSearch.query("the secret life of", queryCb("the secret life of"));
 	*/
 
-/*
+
 	textSearch.query("how i me", queryCb("how i me"));	
 	textSearch.query("how i m", queryCb("how i m"));
 	textSearch.query("game of th", queryCb("game of t"));
 	textSearch.query("game thr", queryCb("game thr"));
 	textSearch.query("american ps", queryCb("american ps"));
 	textSearch.query("american p", queryCb("american p"));
-*/		
+		
 	textSearch.query("wall street", queryCb("wall street")); // 50 objects -> 1ms, 500 objects -> 1ms
 	textSearch.query("wolf of", queryCb("wolf of"));
 	textSearch.query("wolf street", queryCb("wolf street"));
 	textSearch.query("wolf of wall", queryCb("wolf of wall"));
 	
-	textSearch.query("game of th", queryCb("game of t"));
-	textSearch.query("american ps", queryCb("american ps"));
-	textSearch.query("american p", queryCb("american p"));
-
 	//textSearch.query("game thr", queryCb("game thr"));
 
 	textSearch.query("her", queryCb("her")); // TODO: her is not in the first place because hercules gets bigger points
