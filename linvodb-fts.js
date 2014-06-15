@@ -121,7 +121,8 @@ function getTokensScoring(opts, tokens, origTokens)
 		// For now, we assume all tokens are equally important; in the future, we'll have TD-IDF's
 		var tVec = token.split(" ");
 		return opts.boost * ( 1 + (
-			(_.intersection(tVec, origTokens || tokens).length) / (tVec.length * tokens.length * opts.fraction)
+			(_.intersection(tVec, origTokens || tokens).length + tokens.length-i) / 
+			(tVec.length * tokens.length * opts.fraction)
 		));
 	}));
 };
@@ -184,7 +185,7 @@ function applyQuery(indexes, idxQuery)
 		var indexBoost = 1;
 		if (this.path[0].match("Bigram")) indexBoost = 3;
 		if (this.path[0].match("Trigram")) indexBoost = 5;
-		//indexBoost += (this.parent.keys.length - this.parent.keys.indexOf(this.key))/(this.parent.keys.length); // Include the position of the token into the calculation
+		if (this.path[0].match("gram")) indexBoost += (this.parent.keys.length - this.parent.keys.indexOf(this.key))/(this.parent.keys.length*2); // Include the position of the token into the calculation
 		
 		var indexedScores = idxTrav.get(this.path) || { };
 		_.each(indexedScores, function(score, id) {
