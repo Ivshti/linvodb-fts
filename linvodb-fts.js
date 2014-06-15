@@ -167,13 +167,14 @@ function applyQueryString(indexes, completer, queryStr)
 		if (suggestion == lastToken) return; // don't override the searches for the original token
 
 		// boost the first suggestion
-		var score = ( i==0 ? 2 : 1 ) / Math.min(20, suggestions.length);
-		
+		//var score = ( i==0 ? 2 : 1 ) / Math.min(10, suggestions.length);
+		var score = ( i==0 ? 2 : 1 ) / Math.min(2, suggestions.length);
+
 		if (suggestions.length < 100) idxQuery.idxExact[suggestion] = score;
 		if (token(-1)) idxQuery.idxExactBigram[ token(-1)+" "+suggestion ] = score*2; // s+1 / suggestions.length
 		if (token(-2)) idxQuery.idxExactTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score*3;
 	});
-		
+
 	return applyQuery(indexes, idxQuery); // The indexes we will walk for that query
 };
 
@@ -194,7 +195,7 @@ function applyQuery(indexes, idxQuery)
 		_.each(indexedScores, function(score, id) {
 			if (id[0] == "_") return; // special case, ID's cannot begin with _, that's metadata
 			if (! resMap[id]) resMap[id] = 0;
-			resMap[id] += score * indexBoost;
+			resMap[id] += score * searchTokenScore * indexBoost;
 		});
 	});
 	
