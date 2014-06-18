@@ -3,6 +3,8 @@ var _ = require("lodash");
 var traverse = require("traverse");
 var Autocomplete = require("autocomplete");
 var partialSort = require("./partial-sort").partialSort;
+var Unidecoder = require("stringex/lib/unidecoder");
+
 /*
  * TODO: do this in a separate thread?
  * TODO: more class-oriented structure, e.g. indexes to have .getDocuments(indexName, token) or something
@@ -90,7 +92,7 @@ function getFieldIndex(field, fieldConf)
 	/*
 	 * NOTE: it would be great if we somehow apply this pipeline dynamically
 	 */
-	var tokens = tokenizer.tokenize(field.toLowerCase()), exactTokens;
+	var tokens = tokenizer.tokenize(Unidecoder.decode(field).toLowerCase()), exactTokens;
 	if (opts.title) exactTokens = [].concat(tokens);
 	if (opts.stopwords) tokens = tokens.filter(notStopWord);
 	if (!opts.title) exactTokens = [].concat(tokens);

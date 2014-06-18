@@ -1,7 +1,7 @@
 {
   "name": "linvodb-fts",
   "preferGlobal": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "Ivo Georgiev <ivo@linvo.com>",
   "description": "LinvoDB - full text search extension",
   "main": "./linvodb-fts",
@@ -14,6 +14,7 @@
     "async": ">=0.2.9",
     "traverse": ">=0.6.6",
     "natural": ">=0.1.27",
-    "autocomplete": ">=0.0.1"
+    "autocomplete": ">=0.0.1",
+    "stringex": ">=0.2.4"
   }
 }

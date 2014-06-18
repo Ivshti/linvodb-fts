@@ -93,6 +93,7 @@ metaStream.on("close", function() {
 	textSearch.query("the secret life of", queryCb("the secret life of"));
 	*/
 
+	textSearch.query("amelie", queryCb("amelie"));	
 
 	textSearch.query("how i me", queryCb("how i me"));	
 	textSearch.query("how i m", queryCb("how i m"));
