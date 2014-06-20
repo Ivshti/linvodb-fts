@@ -163,7 +163,7 @@ function applyQueryString(indexes, completer, queryStr)
 		suggestions = null;
 	
 	// don't apply suggestions if the user is about to type another word - last one is complete
-	if (completer && !queryStr.match(" $")) suggestions = completer.search(lastToken);
+	if (completer && !queryStr.match(" $") && lastToken) suggestions = completer.search(lastToken);
 	if (suggestions && suggestions.length > 1) suggestions.forEach(function(suggestion, i)
 	{
 		if (suggestion == lastToken) return; // don't override the searches for the original token
