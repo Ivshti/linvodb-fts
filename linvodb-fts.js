@@ -119,6 +119,7 @@ function getFieldIndex(field, fieldConf)
 
 function getTokensScoring(opts, tokens, origTokens)
 {
+	// BUG: what happens if we have a token twice? the second one will override first one's score, instead of having them added
 	return _.zipObject(tokens, tokens.map(function(token, i) {
 		// Calculate score
 		// For now, we assume all tokens are equally important; in the future, we'll have TD-IDF's
