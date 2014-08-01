@@ -124,7 +124,7 @@ function getTokensScoring(opts, tokens, origTokens)
 		// Calculate score
 		// For now, we assume all tokens are equally important; in the future, we'll have TD-IDF's
 		var tVec = token.split(" ");
-		return opts.boost * ( 1 + (
+		return opts.boost * ( 1 + ( // TODO: instead of doing a +1 here, do this when searching (we do it so we can multiply scores to boost
 			(_.intersection(tVec, origTokens || tokens).length + tokens.length-i) / 
 			(tVec.length * tokens.length * opts.fraction)
 		));
