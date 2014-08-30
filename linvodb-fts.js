@@ -119,11 +119,12 @@ function getFieldIndex(field, fieldConf)
 
 function getTokensScoring(opts, tokens, origTokens)
 {
+	// BUG: what happens if we have a token twice? the second one will override first one's score, instead of having them added
 	return _.zipObject(tokens, tokens.map(function(token, i) {
 		// Calculate score
 		// For now, we assume all tokens are equally important; in the future, we'll have TD-IDF's
 		var tVec = token.split(" ");
-		return opts.boost * ( 1 + (
+		return opts.boost * ( 1 + ( // TODO: instead of doing a +1 here, do this when searching (we do it so we can multiply scores to boost
 			(_.intersection(tVec, origTokens || tokens).length + tokens.length-i) / 
 			(tVec.length * tokens.length * opts.fraction)
 		));
