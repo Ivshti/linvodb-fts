@@ -7,7 +7,7 @@ var Unidecoder = require("stringex/lib/unidecoder");
 
 
 var SUGGESTIONS_MAX_FRACTION = 10;
-var SUGGESTIONS_MAX = 20;
+var SUGGESTIONS_MAX = 30;
 
 function LinvoFTS()
 {
@@ -154,7 +154,10 @@ function applyQueryString(indexes, completer, queryStr)
 	 * Supplementing the query with suggestions ensures we can do instant search-style queries
 	 */
 	var idxQuery = getFieldIndex(queryStr, { bigram: true, trigram: true, title: true });
-	
+	traverse(idxQuery).forEach(function(val) {
+		if (this.isLeaf && typeof(val)=="number") this.update(1);
+	});
+
 	var tokens = tokenizer.tokenize(queryStr.toLowerCase()),
 		token = function(i) { return tokens[tokens.length+i] },
 		lastToken = tokens.pop(),
@@ -167,7 +170,7 @@ function applyQueryString(indexes, completer, queryStr)
 		if (suggestion == lastToken) return; // don't override the searches for the original token
 
 		//var score = 1 / Math.max(SUGGESTIONS_MAX_FRACTION, suggestions.length);
-		var score = 1;
+		var score = 0.5;
 
 		idxQuery.idx[suggestion] = score; // those are the heavy look-ups, so do them only if we're under SUGGESTIONS_MAX
 		if (token(-1)) idxQuery.idxBigram[ token(-1)+" "+suggestion ] = score*2; // s+1 / suggestions.length
