@@ -13,17 +13,26 @@ function LinvoFTS()
 {
 	var self = this;
 	
-	var indexes = self.__indexes = { };
+	var indexes = self.__indexes = { 
+		idx: {},
+		idxBigram: {}, idxTrigram: {}
+	};
 	var completer = self.__completer = Autocomplete.connectAutocomplete();
 
 	/* External interfaces
 	 */
 	self.index = function(doc, idxCfg) {
-		self.add(self.get(doc,idxCfg));
+		self.add(doc.id, self.get(doc,idxCfg));
 	};
 	self.get = function(doc, idxCfg) { return getDocumentIndex(doc, idxCfg) };
-	self.add = function(docIdx) {
-		_.merge(indexes, docIdx);
+	self.add = function(id, docIdx) {
+		for (k1 in docIdx) {
+			var didx = docIdx[k1]; var idx = indexes[k1];
+			for (keyword in didx) { 
+				if (! idx[keyword]) idx[keyword] = {};
+				idx[keyword][id] = didx[keyword];
+			};
+		};
 		if (docIdx.idx) _.each(docIdx.idx, function(val, token) { 
 			if (token.length>1) completer.addElement(token);
 		});
@@ -60,7 +69,7 @@ function getDocumentIndex(doc, idxConf)
 		
 		strings.forEach(function(str) { 
 			var fieldIdx = getFieldIndex(str, _.extend({ fraction: strings.length }, fieldCfg));
-			mergeIndexes([ idx, attachDocScoreMap(fieldIdx, doc.id, key) ]);
+			mergeIndexes([ idx, fieldIdx ]);
 		});
 	});
 
@@ -125,19 +134,6 @@ function getTokensScoring(opts, tokens, origTokens)
 			(tVec.length * tokens.length * opts.fraction)
 		));
 	}));
-};
-
-function attachDocScoreMap(idx, id, key)
-{
-	_.each(idx, function(index) {
-		_.each(index, function(val, token) {
-			var tuple = {};
-			tuple[id] = val;
-			tuple["__"+key] = 1; // keep stats on which keys is this token retrieved from
-			index[token] = tuple;
-		});
-	});
-	return idx;
 };
 
 function mergeIndexes(indexes)
