@@ -26,6 +26,7 @@ function LinvoFTS()
 	};
 	self.get = function(doc, idxCfg) { return getDocumentIndex(doc, idxCfg) };
 	self.add = function(id, docIdx) {
+		// Consider using a raw hashmap for indexes, it will be more efficient
 		for (k1 in docIdx) {
 			var didx = docIdx[k1]; var idx = indexes[k1];
 			for (keyword in didx) { 
