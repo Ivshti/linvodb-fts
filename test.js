@@ -4,24 +4,25 @@ var LinvoFTS = require("./linvodb-fts");
 
 mongoose.set("cinematic-torrents-connection", process.env.LOCAL_TORRENTS_DB ? // WARNING; taken from torrentCrawler
     mongoose.createConnection("localhost", "cinematic-torrents")
-    : mongoose.createConnection("mongodb://linvo:deadsnake09@ds041938-a0.mongolab.com:41938/cinematic")
+    : mongoose.createConnection("mongodb://cinematic:deadsnakes12@164.138.221.184:27017/cinematic")
 );
 
 var Metadata = mongoose.get("cinematic-torrents-connection").model("Metadata", new mongoose.Schema({ }, { collection: "metadata", strict: false }));
 
 var textSearch = new LinvoFTS();
-var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: true }, type: /series|movie/ })
-	.sort({ seeders: -1 })/*.limit(50)*/.lean().stream();
+var metaStream = Metadata.find({ "scraper.complete": true, seeders: { $exists: true }, type: /series|movie/ }, 
+	  {name: 1, cast: 1, director: 1, writer: 1, imdb_id: 1  })
+	.sort({ seeders: -1 }).limit(5000).lean().stream();
 
 var indexTime = 0, docsCount = 0;
 metaStream.on("data", function(meta) {
 	var start = Date.now(); // LOGGING
 	meta.id = meta.imdb_id;
 	textSearch.index(meta, {
-		name: { title: true, bigram: true, trigram: true, boost: 2.5 },
-		cast: { title: true, bigram: true, trigram: true },
-		director: { title: true, bigram: true, trigram: true },
-		writer: { title: true, bigram: true, trigram: true },
+		name: { title: true, bigram: true, trigram: false, boost: 2.5 },
+		cast: { title: true, bigram: true, trigram: false },
+		director: { title: true, bigram: true, trigram: false },
+		writer: { title: true, bigram: true, trigram: false },
 		//description: {  boost: 1, bigram: true, stemExact: true },
 	});
 	indexTime += (Date.now()-start); docsCount++; // LOGGING
@@ -38,12 +39,13 @@ metaStream.on("close", function() {
 	};	
 	console.log("idx",Object.keys(textSearch.__indexes.idx).length, avgTokens(textSearch.__indexes.idx));	
 	console.log("idxBigram",Object.keys(textSearch.__indexes.idxBigram).length);	
-	console.log("idxTrigram",Object.keys(textSearch.__indexes.idxTrigram).length);	
+	//console.log("idxTrigram",Object.keys(textSearch.__indexes.idxTrigram).length);	
 
+	/*
 	console.log("idxExact", Object.keys(textSearch.__indexes.idxExact).length);	
 	console.log("idxExactBigram", Object.keys(textSearch.__indexes.idxExactBigram).length);	
 	console.log("idxExactTrigram", Object.keys(textSearch.__indexes.idxExactTrigram).length);
-
+	*/
 	/* Calculate the most important bigrams contained in the description
 	* A test in order to drop un-important bigrams/trigrams
 	*/ 

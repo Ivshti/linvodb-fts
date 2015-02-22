@@ -22,7 +22,7 @@ function LinvoFTS()
 	self.index = function(doc, idxCfg) {
 		var docIdx = getDocumentIndex(doc, idxCfg);
 		_.merge(indexes, docIdx);
-		if (docIdx.idxExact) _.each(docIdx.idxExact, function(val, token) { 
+		if (docIdx.idx) _.each(docIdx.idx, function(val, token) { 
 			if (token.length>1) completer.addElement(token);
 		});
 	};
@@ -35,7 +35,7 @@ function LinvoFTS()
 };
 
 /*
- *  Default indexing rules: do n-grams only on titles, also pass title: true to ensure we don't apply stopwords to exact index
+ *  Default indexing rules: do n-grams only on titles, also pass title: true to ensure we don't apply stopwords to index
  * Also, some system to crawl through a field which we have requested for indexing and retrieve all it's strings (and merge the results)
  */
 function getDocumentIndex(doc, idxConf)
@@ -77,14 +77,12 @@ function getFieldIndex(field, fieldConf)
 	/* 
 	 * TODO: shorthands: 
 	 * 		{ title: true } disables stopwords, 
-	 * 		{ exact: true } disables all those and only indexes exact terms 
-	*/
+ 	*/
 	var opts = _.extend({
-		stopwords: true, // false for titles, at least for the exact index
-		stemmer: true,
-		stemExact: false, // TODO: option to stem words in the exact index
-		metaphone: true,
-		bigram: false,
+		stopwords: true, // false for titles
+		//stemmer: true,
+		//metaphone: true,
+		bigram: true,
 		trigram: false,
 		boost: 1,
 		fraction: 1 // for the vector space model, if this string is a fraction of an indexed field (e.g. array), divide by how many strings we have
@@ -93,26 +91,22 @@ function getFieldIndex(field, fieldConf)
 	/*
 	 * NOTE: it would be great if we somehow apply this pipeline dynamically
 	 */
-	var tokens = tokenizer.tokenize(Unidecoder.decode(field).toLowerCase()), exactTokens;
-	if (opts.title) exactTokens = [].concat(tokens);
-	if (opts.stopwords) tokens = tokens.filter(notStopWord);
-	if (!opts.title) exactTokens = [].concat(tokens);
-	
-	if (opts.stemmer) tokens =_.map(tokens, stemmer); // TODO: multi-lingual
-	if (opts.metaphone) tokens = _.map(tokens, function(t) { return metaphone(t) });
+	var tokens = tokenizer.tokenize(Unidecoder.decode(field).toLowerCase());
+	if (opts.stopwords && !opts.title) tokens = tokens.filter(notStopWord);	
+
+	// This will be implemented in a different way
+	//if (opts.stemmer) tokens =_.map(tokens, stemmer); // TODO: multi-lingual
+	//if (opts.metaphone) tokens = _.map(tokens, function(t) { return metaphone(t) });
 
 	var jn = function(t) { return t.join(" ") }, score = getTokensScoring.bind(null, opts);
 	
 	var res = {};
 	res.idx = score(tokens);
-	res.idxExact = score(exactTokens);
 	if (opts.bigram) {
 		res.idxBigram = score(NGrams.bigrams(tokens).map(jn), tokens);
-		res.idxExactBigram = score(NGrams.bigrams(exactTokens).map(jn), exactTokens);
 	}
 	if (opts.trigram) {
 		res.idxTrigram = score(NGrams.trigrams(tokens).map(jn), tokens);
-		res.idxExactTrigram = score(NGrams.trigrams(exactTokens).map(jn), exactTokens);
 	}
 	return res;
 };
@@ -170,13 +164,14 @@ function applyQueryString(indexes, completer, queryStr)
 	{
 		if (suggestion == lastToken) return; // don't override the searches for the original token
 
-		// boost the first suggestion
-		var score = ( i==0 ? 2 : 1 ) / Math.min(20, suggestions.length);
+		var score = 1 / Math.min(20, suggestions.length);
 		
-		if (suggestions.length < 100) idxQuery.idxExact[suggestion] = score;
-		if (token(-1)) idxQuery.idxExactBigram[ token(-1)+" "+suggestion ] = score*2; // s+1 / suggestions.length
-		if (token(-2)) idxQuery.idxExactTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score*3;
+		if (suggestions.length < 100) idxQuery.idx[suggestion] = score;
+		if (token(-1)) idxQuery.idxBigram[ token(-1)+" "+suggestion ] = score*2; // s+1 / suggestions.length
+		if (token(-2)) idxQuery.idxTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score*3;
 	});
+
+	console.log(idxQuery);
 		
 	return applyQuery(indexes, idxQuery); // The indexes we will walk for that query
 };
