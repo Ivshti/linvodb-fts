@@ -159,20 +159,18 @@ function applyQueryString(indexes, completer, queryStr)
 		suggestions = null;
 	
 	// don't apply suggestions if the user is about to type another word - last one is complete
-	if (completer && !queryStr.match(" $") && lastToken) suggestions = completer.search(lastToken);
+	if (completer && !queryStr.match(" $") && lastToken) suggestions = completer.search(lastToken).slice(0, 30);
 	if (suggestions && suggestions.length > 0) suggestions.forEach(function(suggestion, i)
 	{
 		if (suggestion == lastToken) return; // don't override the searches for the original token
 
-		var score = 1 / Math.min(20, suggestions.length);
+		var score = 1 / Math.max(10, suggestions.length);
 		
 		if (suggestions.length < 100) idxQuery.idx[suggestion] = score;
 		if (token(-1)) idxQuery.idxBigram[ token(-1)+" "+suggestion ] = score*2; // s+1 / suggestions.length
 		if (token(-2)) idxQuery.idxTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score*3;
 	});
-
-	console.log(idxQuery);
-		
+			
 	return applyQuery(indexes, idxQuery); // The indexes we will walk for that query
 };
 
@@ -193,7 +191,7 @@ function applyQuery(indexes, idxQuery)
 		_.each(indexedScores, function(score, id) {
 			if (id[0] == "_") return; // special case, ID's cannot begin with _, that's metadata
 			if (! resMap[id]) resMap[id] = 0;
-			resMap[id] += score * indexBoost;
+			resMap[id] += score * searchTokenScore * indexBoost;
 		});
 	});
 	
