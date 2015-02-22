@@ -5,10 +5,9 @@ var Autocomplete = require("autocomplete");
 var partialSort = require("./partial-sort").partialSort;
 var Unidecoder = require("stringex/lib/unidecoder");
 
-/*
- * TODO: do this in a separate thread?
- * TODO: more class-oriented structure, e.g. indexes to have .getDocuments(indexName, token) or something
- */
+
+var SUGGESTIONS_MAX_FRACTION = 10;
+var SUGGESTIONS_MAX = 20;
 
 function LinvoFTS()
 {
@@ -159,12 +158,12 @@ function applyQueryString(indexes, completer, queryStr)
 		suggestions = null;
 	
 	// don't apply suggestions if the user is about to type another word - last one is complete
-	if (completer && !queryStr.match(" $") && lastToken) suggestions = completer.search(lastToken).slice(0, 30);
+	if (completer && !queryStr.match(" $") && lastToken) suggestions = completer.search(lastToken).slice(0, SUGGESTIONS_MAX);
 	if (suggestions && suggestions.length > 0) suggestions.forEach(function(suggestion, i)
 	{
 		if (suggestion == lastToken) return; // don't override the searches for the original token
 
-		var score = 1 / Math.max(10, suggestions.length);
+		var score = 1 / Math.max(SUGGESTIONS_MAX_FRACTION, suggestions.length);
 		
 		if (suggestions.length < 100) idxQuery.idx[suggestion] = score;
 		if (token(-1)) idxQuery.idxBigram[ token(-1)+" "+suggestion ] = score*2; // s+1 / suggestions.length
