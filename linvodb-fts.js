@@ -19,7 +19,7 @@ function LinvoFTS()
 	/* External interfaces
 	 */
 	self.index = function(doc, idxCfg) {
-		self.add(self.get(doc,idxConf));
+		self.add(self.get(doc,idxCfg));
 	};
 	self.get = function(doc, idxCfg) { return getDocumentIndex(doc, idxCfg) };
 	self.add = function(docIdx) {
@@ -161,14 +161,14 @@ function applyQueryString(indexes, completer, queryStr)
 		suggestions = null;
 	
 	// don't apply suggestions if the user is about to type another word - last one is complete
-	if (completer && !queryStr.match(" $") && lastToken) suggestions = completer.search(lastToken);
+	if (completer && !queryStr.match(" $") && lastToken) suggestions = completer.search(lastToken).slice(0, SUGGESTIONS_MAX);
 	if (suggestions && suggestions.length > 0) suggestions.forEach(function(suggestion, i)
 	{
 		if (suggestion == lastToken) return; // don't override the searches for the original token
 
 		var score = 1 / Math.max(SUGGESTIONS_MAX_FRACTION, suggestions.length);
 		
-		if (suggestions.length < SUGGESTIONS_MAX) idxQuery.idx[suggestion] = score; // those are the heavy look-ups, so do them only if we're under SUGGESTIONS_MAX
+		idxQuery.idx[suggestion] = score; // those are the heavy look-ups, so do them only if we're under SUGGESTIONS_MAX
 		if (token(-1)) idxQuery.idxBigram[ token(-1)+" "+suggestion ] = score*2; // s+1 / suggestions.length
 		if (token(-2)) idxQuery.idxTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score*3;
 	});
