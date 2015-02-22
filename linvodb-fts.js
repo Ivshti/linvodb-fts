@@ -166,13 +166,13 @@ function applyQueryString(indexes, completer, queryStr)
 	{
 		if (suggestion == lastToken) return; // don't override the searches for the original token
 
-		var score = 1 / Math.max(SUGGESTIONS_MAX_FRACTION, suggestions.length);
-		
+		//var score = 1 / Math.max(SUGGESTIONS_MAX_FRACTION, suggestions.length);
+		var score = 1;
+
 		idxQuery.idx[suggestion] = score; // those are the heavy look-ups, so do them only if we're under SUGGESTIONS_MAX
 		if (token(-1)) idxQuery.idxBigram[ token(-1)+" "+suggestion ] = score*2; // s+1 / suggestions.length
 		if (token(-2)) idxQuery.idxTrigram[ token(-2)+" "+token(-1)+" "+suggestion ] = score*3;
 	});
-			
 	return applyQuery(indexes, idxQuery); // The indexes we will walk for that query
 };
 
