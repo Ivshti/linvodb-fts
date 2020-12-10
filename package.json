@@ -10,11 +10,11 @@
     "url": "https://github.com/Ivshti/linvodb-fts.git"
   },
   "dependencies" : {
-    "lodash": ">=2.4.1",
-    "async": ">=0.2.9",
-    "traverse": ">=0.6.6",
-    "natural": ">=0.1.27",
-    "autocomplete": ">=0.0.1",
-    "stringex": ">=0.2.4"
+    "lodash": "^2.4.1",
+    "async": "^0.2.9",
+    "traverse": "^0.6.6",
+    "natural": "^0.1.27",
+    "autocomplete": "^0.0.1",
+    "stringex": "^0.2.4"
   }
 }
